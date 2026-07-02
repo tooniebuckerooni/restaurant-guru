@@ -8,7 +8,7 @@ A scheduling-first workforce app for small teams. Built by a hospitality operato
 - **Hospitality is the launch wedge, not the ceiling.** Your domain expertise shows up as *templates and presets* (bar/FOH/BOH role packs, split shifts, service periods like brunch/dinner rush) rather than hard-coded restaurant logic. Other industries get their own template packs later.
 - **The hook:** most competitors (7shifts, HotSchedules, Deputy, When I Work) make you build schedules by hand on a grid. Our flagship is generation — you set the rules once, then the week builds itself in seconds.
 
-## Flagship: the Swift Schedule Generator
+## Flagship: the Fast Schedule Generator
 
 One tap turns your inputs into a complete, conflict-free weekly schedule.
 
@@ -22,19 +22,24 @@ One tap turns your inputs into a complete, conflict-free weekly schedule.
 
 **Why this wins:** the 2 hours a manager spends every Sunday night with a spreadsheet becomes 5 minutes. That's the demo, the ad, and the onboarding moment.
 
+**Drafts, save & resume (v1):** every schedule is a saved draft until published. Managers can stop mid-edit and pick up later; nothing is lost on close. Published weeks are kept forever as history.
+
+**Copy last week (v1):** one tap duplicates the previous week's published schedule as a new draft. Crucially, the engine immediately *repairs* the copy against current reality — flagging or reassigning shifts broken by new time-off requests, availability changes, or departed staff — so "same as last week with small edits" takes a minute, not a rebuild. This matters because copy-last-week is how most managers actually schedule today; it's the generator's biggest competitor, so we make it a first-class flow that still runs through the rules engine. Recurring weekly patterns can also be saved as named templates ("Standard week", "Holiday week", "Patio season").
+
 ## Supporting features (recommended)
 
 Ordered roughly by how much they compound the flagship's value:
 
-1. **Availability & time-off requests (v1)** — staff submit from their phone; approved requests feed the generator automatically. Without this, the generator's inputs go stale and the product dies.
-2. **Publish & notify (v1)** — push/SMS/email when the schedule drops or a shift changes. Staff see only their shifts; managers see everything.
-3. **Shift swaps & open-shift pickup (v1.x)** — staff trade shifts or claim open ones; manager approves with one tap; the engine validates the swap against the same rules (hours, overtime, qualifications). This is the #1 daily pain after schedule creation.
-4. **Labor cost meter (v1.x)** — live wage cost of the draft schedule as you build, vs. a budget or (later) projected sales. Managers think in labor %, so this makes the generator speak their language.
-5. **Time clock & timesheets (v2)** — clock in/out on a phone or a tablet at the venue (geofence/PIN). Scheduled-vs-actual hours closes the loop and feeds payroll.
-6. **Team messaging & announcements (v2)** — lightweight, schedule-anchored ("message tonight's closing crew"). Kills the group-chat chaos without trying to replace Slack.
-7. **Shift tasks & checklists (v2)** — opening/closing/side-work lists attached to shifts. Very hospitality-flavored but genuinely generic (retail open/close, clinic room prep).
-8. **Payroll & POS integrations (v2.x)** — export timesheets to Gusto/ADP/etc.; import sales from Toast/Square to forecast demand. Integrations are the moat but come after core value is proven.
-9. **Hospitality module (v2.x, paid add-on)** — tip pool calculations, section assignments, service-period templates. This is where your bar/restaurant expertise becomes a differentiator without polluting the generic core.
+1. **Schedule reporting (v1)** — built into the grid, not a separate module: total hours per staff member per week (with visual flags when someone is over/under their target or crossing into overtime), total hours and cost per role and per day, and week-over-week comparison. Later (v2): scheduled vs. actual hours once the time clock exists, and monthly/custom-range exports (CSV/PDF) for payroll prep.
+2. **Availability & time-off requests (v1)** — staff submit from their phone; approved requests feed the generator automatically. Without this, the generator's inputs go stale and the product dies.
+3. **Publish & notify (v1)** — push/SMS/email when the schedule drops or a shift changes. Staff see only their shifts; managers see everything.
+4. **Shift swaps & open-shift pickup (v1.x)** — staff trade shifts or claim open ones; manager approves with one tap; the engine validates the swap against the same rules (hours, overtime, qualifications). This is the #1 daily pain after schedule creation.
+5. **Labor cost meter (v1.x)** — live wage cost of the draft schedule as you build, vs. a budget or (later) projected sales. Managers think in labor %, so this makes the generator speak their language.
+6. **Time clock & timesheets (v2)** — clock in/out on a phone or a tablet at the venue (geofence/PIN). Scheduled-vs-actual hours closes the loop and feeds payroll.
+7. **Team messaging & announcements (v2)** — lightweight, schedule-anchored ("message tonight's closing crew"). Kills the group-chat chaos without trying to replace Slack.
+8. **Shift tasks & checklists (v2)** — opening/closing/side-work lists attached to shifts. Very hospitality-flavored but genuinely generic (retail open/close, clinic room prep).
+9. **Payroll & POS integrations (v2.x)** — export timesheets to Gusto/ADP/etc.; import sales from Toast/Square to forecast demand. Integrations are the moat but come after core value is proven.
+10. **Hospitality module (v2.x, paid add-on)** — tip pool calculations, section assignments, service-period templates. This is where your bar/restaurant expertise becomes a differentiator without polluting the generic core.
 
 **Deliberately out of scope for now:** full payroll processing, inventory, reservations, HR/onboarding docs. Each is a company in itself.
 
@@ -64,7 +69,27 @@ Time-off requests, availability self-service, notifications on publish/change, s
 Onboard 3–5 friendly venues from your network (this is your unfair advantage — use it). Instrument everything: time-to-first-schedule, generator acceptance rate (% of generated shifts kept unedited), weekly active managers. Fix what the pilots break. Add CSV import of staff lists to kill onboarding friction.
 
 **Phase 4 — Monetize & expand (week 15+)**
-Billing (Stripe): free for tiny teams (≤10 staff), per-active-staff-member pricing above that. Time clock, checklists, first payroll export, and the hospitality add-on module — sequenced by what pilots ask for loudest.
+Billing (Stripe) on the freemium model below. Time clock, checklists, first payroll export, and the hospitality add-on module — sequenced by what pilots ask for loudest.
+
+### Pricing & freemium
+
+Principle: the free tier should match the product's natural weekly rhythm — a manager comes back every week and gets real value — while the paid tier sells *planning ahead, team scale, and history*. Gate the **planning horizon and retention**, not the generate button: counting generations punishes experimentation (a draft you regenerate three times before it's right shouldn't burn credits), whereas horizon gating keeps free users returning weekly by design.
+
+**Free — "This Week"**
+- Teams up to 10 staff.
+- One active week at a time: the current week plus next week. This is the "once per week" habit loop — every Sunday they're back.
+- Full generator, unlimited regenerations *within* that week, drafts/save-and-resume, copy last week.
+- Basic reporting on the grid (hours per person this week).
+- 4 weeks of schedule history.
+
+**Pro (per active staff member per month, monthly/annual)**
+- Unlimited staff, plan any number of weeks ahead — the full **month view** and beyond (holiday season planning is a killer upgrade moment in hospitality).
+- Named week templates, unlimited history, week-over-week and monthly reports with CSV/PDF export.
+- Shift swaps/open-shift marketplace, labor cost meter vs. budget, SMS notifications.
+
+**Add-ons (later):** hospitality module (tip pools, sections), payroll/POS integrations, multi-location.
+
+Natural upgrade triggers, in the order pilots will hit them: 11th staff member, wanting to post next month's rota before a holiday, needing a month's hours report for payroll, and staff asking for swaps. Each is a moment of felt need, not an arbitrary paywall.
 
 ### Success metrics to watch from day one
 
