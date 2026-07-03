@@ -51,7 +51,9 @@ Ordered roughly by how much they compound the flagship's value:
 - **Frontend:** Next.js + React + TypeScript, Tailwind. Schedule grid is the crown jewel — budget real time for drag-and-drop polish.
 - **Backend:** Node/TypeScript (single language across the stack) with Postgres. Row-level multi-tenancy from day one (every table keyed by `org_id`).
 - **Scheduling engine:** isolated service/module with a clean API (`inputs → schedule + score + violations`). Start with a greedy assigner + local-search improvement in TypeScript (fast enough for small teams, easy to debug); keep the interface solver-agnostic so we can swap in a real CP-SAT solver (e.g. OR-Tools via a small Python service) when team sizes and rule complexity grow.
+- **Auth & access:** one app, role-based access (see FLOWS.md). Managers: email/Google sign-in. Staff: invite-only with one-time codes — no passwords. Staff experience ships as an installable PWA; native apps deferred.
 - **Notifications:** email first (Resend/Postmark), then push + SMS (Twilio).
+- **Design system:** visual reference lives in the Claude Design project (`41fcef3a…`, "manager-schedule-grid" kit). Its HTML/CSS gets imported under `design/` and distilled into the Tailwind theme during Phase 0.
 - **Hosting:** Vercel + managed Postgres (Neon/Supabase) to start. Boring and cheap.
 
 ### Phases
