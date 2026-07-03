@@ -1,0 +1,152 @@
+:root {
+  /* ---------- Brand: warm amber / "golden hour" ---------- */
+  --brand-50:  oklch(97% 0.020 55);
+  --brand-100: oklch(93% 0.045 52);
+  --brand-200: oklch(87% 0.075 50);
+  --brand-300: oklch(79% 0.110 48);
+  --brand-400: oklch(71% 0.140 46);
+  --brand-500: oklch(64% 0.160 45);   /* primary brand color */
+  --brand-600: oklch(56% 0.155 43);
+  --brand-700: oklch(47% 0.135 42);
+  --brand-800: oklch(38% 0.105 41);
+  --brand-900: oklch(29% 0.075 40);
+
+  /* ---------- Neutrals: warm-tinted grays (grid + backgrounds) ---------- */
+  --neutral-0:   oklch(99% 0.004 70);
+  --neutral-50:  oklch(97% 0.006 70);
+  --neutral-100: oklch(94% 0.008 68);
+  --neutral-200: oklch(89% 0.009 66);
+  --neutral-300: oklch(82% 0.010 64);
+  --neutral-400: oklch(70% 0.011 62);
+  --neutral-500: oklch(58% 0.012 60);
+  --neutral-600: oklch(48% 0.012 58);
+  --neutral-700: oklch(38% 0.011 56);
+  --neutral-800: oklch(27% 0.009 54);
+  --neutral-900: oklch(18% 0.007 52);
+  --neutral-950: oklch(12% 0.005 50);
+
+  /* ---------- Status: success / warning / error / draft ---------- */
+  --success-100: oklch(93% 0.050 150);
+  --success-500: oklch(60% 0.135 148);
+  --success-700: oklch(40% 0.100 150);
+
+  --warning-100: oklch(93% 0.060 80);
+  --warning-500: oklch(68% 0.160 78);
+  --warning-700: oklch(46% 0.110 70);
+
+  --error-100: oklch(93% 0.045 20);
+  --error-500: oklch(56% 0.190 25);
+  --error-700: oklch(42% 0.150 22);
+
+  --draft-100: var(--neutral-100);
+  --draft-500: var(--neutral-500);
+  --draft-700: var(--neutral-700);
+
+  /* ---------- Role colors: 8 distinguishable hues, kept clear of ---------- */
+  /* ---------- status hues (green 148 / amber 78 / red 25) AND spaced   ---------- */
+  /* ---------- >=30° apart from each other (bartender/barback were too  ---------- */
+  /* ---------- close at 26° — widened in this revision).                ---------- */
+  --role-bartender:      oklch(60% 0.140 223);
+  --role-bartender-tint: oklch(93% 0.030 223);
+  --role-server:         oklch(60% 0.130 283);
+  --role-server-tint:    oklch(93% 0.030 283);
+  --role-kitchen:        oklch(56% 0.110 163);
+  --role-kitchen-tint:   oklch(93% 0.030 163);
+  --role-host:           oklch(62% 0.150 343);
+  --role-host-tint:      oklch(93% 0.032 343);
+  --role-barback:        oklch(56% 0.120 193);
+  --role-barback-tint:   oklch(93% 0.028 193);
+  --role-manager:        oklch(58% 0.110 253);
+  --role-manager-tint:   oklch(93% 0.028 253);
+  --role-driver:         oklch(64% 0.140 313);
+  --role-driver-tint:    oklch(93% 0.032 313);
+  --role-cleaner:        oklch(62% 0.090 110);
+  --role-cleaner-tint:   oklch(93% 0.024 110);
+
+  /* ---------- Semantic aliases ---------- */
+  --surface-page:    var(--neutral-50);
+  --surface-card:    var(--neutral-0);
+  --surface-sunken:  var(--neutral-100);
+  --surface-overlay: oklch(20% 0.02 55 / 0.45);
+
+  --border-subtle: var(--neutral-100);
+  --border-default: var(--neutral-200);
+  --border-strong:  var(--neutral-300);
+
+  --text-primary:   var(--neutral-900);
+  --text-secondary: var(--neutral-600);
+  --text-tertiary:  var(--neutral-500);
+  --text-on-brand:  #fff;
+  --text-disabled:  var(--neutral-400);
+
+  --brand-primary:       var(--brand-500);
+  --brand-primary-hover: var(--brand-600);
+  --brand-primary-active:var(--brand-700);
+  --brand-primary-tint:  var(--brand-50);
+
+  --focus-ring: var(--brand-400);
+}
+
+/* ---------------------------------------------------------------
+   Dark mode. Bar managers close out at 2am — this is a real theme,
+   not an afterthought. Toggle with data-theme="dark" on a container
+   (e.g. <html data-theme="dark">). Neutral scale inverts; brand and
+   status hues stay put but shift lightness/chroma for a dark surface;
+   role tiles get a touch less chroma so they don't vibrate at night.
+   ---------------------------------------------------------------- */
+[data-theme='dark'] {
+  --neutral-0:   oklch(16% 0.010 55);
+  --neutral-50:  oklch(19% 0.010 55);
+  --neutral-100: oklch(23% 0.010 55);
+  --neutral-200: oklch(28% 0.010 55);
+  --neutral-300: oklch(35% 0.010 56);
+  --neutral-400: oklch(46% 0.011 58);
+  --neutral-500: oklch(58% 0.011 60);
+  --neutral-600: oklch(70% 0.010 62);
+  --neutral-700: oklch(80% 0.009 64);
+  --neutral-800: oklch(89% 0.007 66);
+  --neutral-900: oklch(95% 0.005 70);
+  --neutral-950: oklch(99% 0.003 70);
+
+  --surface-page:    oklch(13% 0.008 55);
+  --surface-card:    var(--neutral-50);
+  --surface-sunken:  var(--neutral-100);
+  --surface-overlay: oklch(8% 0.01 55 / 0.6);
+
+  --border-subtle:  var(--neutral-100);
+  --border-default: var(--neutral-200);
+  --border-strong:  var(--neutral-300);
+
+  --text-primary:   var(--neutral-900);
+  --text-secondary: var(--neutral-600);
+  --text-tertiary:  var(--neutral-500);
+  --text-disabled:  var(--neutral-400);
+
+  --brand-500: oklch(70% 0.155 46);
+  --brand-primary:        var(--brand-500);
+  --brand-primary-hover:  oklch(76% 0.145 47);
+  --brand-primary-active: oklch(62% 0.155 45);
+  --brand-primary-tint:   oklch(24% 0.05 48);
+
+  --success-100: oklch(24% 0.06 150);
+  --success-700: oklch(85% 0.09 150);
+  --warning-100: oklch(24% 0.07 80);
+  --warning-700: oklch(85% 0.10 80);
+  --error-100:   oklch(24% 0.06 22);
+  --error-700:   oklch(85% 0.10 22);
+  --draft-100: var(--neutral-100);
+  --draft-700: var(--neutral-700);
+
+  --role-bartender-tint: oklch(26% 0.05 223);
+  --role-server-tint:    oklch(26% 0.05 283);
+  --role-kitchen-tint:   oklch(24% 0.045 163);
+  --role-host-tint:      oklch(26% 0.055 343);
+  --role-barback-tint:   oklch(24% 0.045 193);
+  --role-manager-tint:   oklch(25% 0.045 253);
+  --role-driver-tint:    oklch(27% 0.05 313);
+  --role-cleaner-tint:   oklch(26% 0.035 110);
+
+  --shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.35);
+  --shadow-md: 0 2px 10px oklch(0% 0 0 / 0.45), 0 1px 2px oklch(0% 0 0 / 0.3);
+  --shadow-lg: 0 10px 28px oklch(0% 0 0 / 0.55), 0 2px 6px oklch(0% 0 0 / 0.35);
+}

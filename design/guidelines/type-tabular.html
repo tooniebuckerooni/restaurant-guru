@@ -1,0 +1,13 @@
+<!-- @dsCard group="Type" viewport="700x170" subtitle="Public Sans tnum — hours, times, and money stay aligned" name="Tabular Numerals" -->
+<link rel="stylesheet" href="../styles.css">
+<div style="font-family:var(--font-body); padding:16px; background:var(--surface-page); display:flex; flex-direction:column; gap:6px;">
+  <div style="display:flex; gap:24px; font-size:20px; font-weight:700; color:var(--text-primary); font-feature-settings:var(--font-feature-tabular); font-variant-numeric:tabular-nums;">
+    <span>9:00 AM</span><span>11:30 AM</span><span>111.25 hrs</span><span>$4,820.00</span>
+  </div>
+  <div style="font-size:12px;color:var(--text-tertiary)">font-feature-settings: 'tnum' 1, 'lnum' 1 — digits are fixed-width and align in columns.</div>
+  <div style="display:grid; grid-template-columns:auto auto; gap:2px 16px; font-size:14px; font-feature-settings:var(--font-feature-tabular); color:var(--text-primary); margin-top:4px;">
+    <span>Mo</span><span style="text-align:right">8.0</span>
+    <span>Tu</span><span style="text-align:right">10.5</span>
+    <span>We</span><span style="text-align:right">112.25</span>
+  </div>
+</div>

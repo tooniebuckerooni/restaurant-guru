@@ -1,0 +1,192 @@
+<!-- @dsCard group="Components" viewport="700x180" name="Badges" -->
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<div id="root" style="padding:20px; background:var(--surface-page); font-family:var(--font-body);"></div>
+<script type="text/plain" id="app-source">
+
+function Icon({ name, size = 18, color = 'currentColor' }) {
+  const ref = React.useRef(null);
+  React.useEffect(() => {
+    if (window.lucide && ref.current) {
+      ref.current.innerHTML = '';
+      const el = document.createElement('i');
+      el.setAttribute('data-lucide', name);
+      ref.current.appendChild(el);
+      window.lucide.createIcons({ attrs: { width: size, height: size, 'stroke-width': 2, color }, root: ref.current });
+    }
+  }, [name, size, color]);
+  return <span ref={ref} style={{ display:'inline-flex', width:size, height:size, color }} />;
+}
+
+function Button({ variant = 'primary', size = 'md', disabled = false, icon, children, onClick }) {
+  const dims = size === 'sm' ? { height:32, padding:'0 12px', fontSize:13 } : { height:38, padding:'0 16px', fontSize:14 };
+  const variants = {
+    primary: { background:'var(--brand-primary)', color:'#fff', boxShadow:'var(--shadow-sm)' },
+    secondary: { background:'var(--surface-card)', color:'var(--text-primary)', border:'1px solid var(--border-strong)' },
+    ghost: { background:'transparent', color:'var(--text-primary)' },
+    danger: { background:'var(--error-500)', color:'#fff' },
+  };
+  return (
+    <button disabled={disabled} onClick={onClick} style={{ display:'inline-flex', alignItems:'center', gap:8, borderRadius:'var(--radius-md)', border:'1px solid transparent', fontFamily:'var(--font-body)', fontWeight:600, cursor: disabled ? 'default' : 'pointer', opacity: disabled ? 0.45 : 1, whiteSpace:'nowrap', ...dims, ...variants[variant] }}>
+      {icon}{children}
+    </button>
+  );
+}
+
+const ROLE_VARS = {
+  bartender: ['--role-bartender','--role-bartender-tint'], server: ['--role-server','--role-server-tint'],
+  kitchen: ['--role-kitchen','--role-kitchen-tint'], host: ['--role-host','--role-host-tint'],
+  barback: ['--role-barback','--role-barback-tint'], manager: ['--role-manager','--role-manager-tint'],
+  driver: ['--role-driver','--role-driver-tint'], cleaner: ['--role-cleaner','--role-cleaner-tint'],
+};
+
+function Badge({ kind = 'status', tone = 'draft', role, dot = true, children }) {
+  const STATUS = {
+    success: { bg:'var(--success-100)', fg:'var(--success-700)', dot:'var(--success-500)' },
+    warning: { bg:'var(--warning-100)', fg:'var(--warning-700)', dot:'var(--warning-500)' },
+    error: { bg:'var(--error-100)', fg:'var(--error-700)', dot:'var(--error-500)' },
+    draft: { bg:'var(--draft-100)', fg:'var(--draft-700)', dot:'var(--draft-500)' },
+    brand: { bg:'var(--brand-primary-tint)', fg:'var(--brand-700)', dot:'var(--brand-500)' },
+  };
+  let bg, fg, dotColor;
+  if (kind === 'role' && ROLE_VARS[role]) {
+    const [c,t] = ROLE_VARS[role]; bg = `var(${t})`; fg = 'var(--text-primary)'; dotColor = `var(${c})`;
+  } else {
+    const t = STATUS[tone] || STATUS.draft; bg = t.bg; fg = t.fg; dotColor = t.dot;
+  }
+  return (
+    <span style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'3px 10px', borderRadius:999, background:bg, color:fg, fontFamily:'var(--font-body)', fontSize:12, fontWeight:600, whiteSpace:'nowrap' }}>
+      {dot && <span style={{ width:6, height:6, borderRadius:'50%', background:dotColor }} />}
+      {children}
+    </span>
+  );
+}
+
+function ShiftBlock({ name, role = 'server', time, status = 'default', onClick }) {
+  const [roleColor, roleTint] = ROLE_VARS[role] || ROLE_VARS.server;
+  let border, background, dashed = false, badge = null, leftColor = `var(${roleColor})`;
+  if (status === 'conflict') { border = '1.5px solid var(--error-500)'; background = 'var(--error-100)'; badge = { label:'Conflict', bg:'var(--error-500)' }; leftColor = 'var(--error-500)'; }
+  else if (status === 'open') { border = '1.5px dashed var(--neutral-300)'; background = 'var(--surface-sunken)'; dashed = true; }
+  else if (status === 'pending-swap') { border = '1.5px solid var(--warning-500)'; background = 'var(--warning-100)'; badge = { label:'Swap pending', bg:'var(--warning-500)' }; leftColor = 'var(--warning-500)'; }
+  else { border = '1px solid var(--border-default)'; background = `var(${roleTint})`; }
+  return (
+    <div onClick={onClick} style={{ position:'relative', display:'flex', flexDirection:'column', gap:2, padding:'8px 10px', borderRadius:'var(--radius-sm)', border, background, borderLeft: dashed ? border : `4px solid ${leftColor}`, fontFamily:'var(--font-body)', cursor:'pointer', minWidth:132, color: dashed ? 'var(--text-tertiary)' : 'var(--text-primary)' }}>
+      {dashed ? <div style={{ fontSize:13, fontWeight:600 }}>Open shift</div> : <div style={{ fontSize:13, fontWeight:700, lineHeight:1.2 }}>{name}</div>}
+      {!dashed && <div style={{ fontSize:11, fontWeight:500, color:'var(--text-secondary)', textTransform:'capitalize' }}>{role}</div>}
+      <div style={{ fontSize:11.5, fontWeight:600, color: dashed ? 'var(--text-tertiary)' : 'var(--text-secondary)', fontFeatureSettings:"'tnum' 1" }}>{time}</div>
+      {badge && <span style={{ position:'absolute', top:-7, right:8, fontSize:10, fontWeight:700, padding:'2px 6px', borderRadius:999, background:badge.bg, color:'#fff' }}>{badge.label}</span>}
+    </div>
+  );
+}
+
+function Input({ label, placeholder, type = 'text', error }) {
+  return (
+    <label style={{ display:'flex', flexDirection:'column', gap:6, fontFamily:'var(--font-body)' }}>
+      {label && <span style={{ fontSize:12.5, fontWeight:600, color:'var(--text-secondary)' }}>{label}</span>}
+      <input type={type} placeholder={placeholder} style={{ fontFamily:'var(--font-body)', fontSize:14, color:'var(--text-primary)', background:'var(--surface-card)', border: `1px solid ${error ? 'var(--error-500)' : 'var(--border-strong)'}`, borderRadius:'var(--radius-md)', padding:'0 12px', height:40, width:'100%', outline:'none', boxSizing:'border-box' }} />
+      {error && <span style={{ fontSize:12, color:'var(--error-700)', fontWeight:500 }}>{error}</span>}
+    </label>
+  );
+}
+
+function Select({ label, options = [] }) {
+  return (
+    <label style={{ display:'flex', flexDirection:'column', gap:6, fontFamily:'var(--font-body)' }}>
+      {label && <span style={{ fontSize:12.5, fontWeight:600, color:'var(--text-secondary)' }}>{label}</span>}
+      <select style={{ fontFamily:'var(--font-body)', fontSize:14, color:'var(--text-primary)', background:'var(--surface-card)', border:'1px solid var(--border-strong)', borderRadius:'var(--radius-md)', padding:'0 12px', height:40, width:'100%', boxSizing:'border-box' }}>
+        {options.map(o => <option key={o}>{o}</option>)}
+      </select>
+    </label>
+  );
+}
+
+function Modal({ title, children, onClose, footer }) {
+  return (
+    <div style={{ position:'absolute', inset:0, background:'var(--surface-overlay)', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'var(--font-body)', zIndex:10 }}>
+      <div style={{ width:420, maxWidth:'90%', background:'var(--surface-card)', borderRadius:'var(--radius-xl)', boxShadow:'var(--shadow-lg)', display:'flex', flexDirection:'column', overflow:'hidden' }}>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'18px 20px', borderBottom:'1px solid var(--border-default)' }}>
+          <span style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:18, color:'var(--text-primary)' }}>{title}</span>
+          <button onClick={onClose} style={{ border:'none', background:'transparent', color:'var(--text-tertiary)', cursor:'pointer', display:'flex' }}><Icon name="x" size={18} /></button>
+        </div>
+        <div style={{ padding:20, color:'var(--text-primary)', fontSize:14, lineHeight:1.5 }}>{children}</div>
+        {footer && <div style={{ display:'flex', justifyContent:'flex-end', gap:10, padding:'14px 20px', borderTop:'1px solid var(--border-default)', background:'var(--surface-sunken)' }}>{footer}</div>}
+      </div>
+    </div>
+  );
+}
+
+function Toast({ tone = 'success', message, onDismiss }) {
+  const TONES = { success:{bg:'var(--success-500)',fg:'#fff'}, warning:{bg:'var(--warning-500)',fg:'#1a1200'}, error:{bg:'var(--error-500)',fg:'#fff'}, neutral:{bg:'var(--neutral-800)',fg:'#fff'} };
+  const t = TONES[tone] || TONES.neutral;
+  return (
+    <div style={{ display:'inline-flex', alignItems:'center', gap:12, padding:'12px 16px', borderRadius:'var(--radius-md)', background:t.bg, color:t.fg, fontFamily:'var(--font-body)', fontSize:13.5, fontWeight:600, boxShadow:'var(--shadow-lg)', minWidth:260 }}>
+      <span style={{ flex:1 }}>{message}</span>
+      {onDismiss && <button onClick={onDismiss} style={{ border:'none', background:'transparent', color:t.fg, opacity:0.75, cursor:'pointer', display:'flex' }}><Icon name="x" size={15} /></button>}
+    </div>
+  );
+}
+
+function StatTile({ label, value, delta, deltaTone = 'success' }) {
+  const deltaColor = deltaTone === 'success' ? 'var(--success-700)' : deltaTone === 'error' ? 'var(--error-700)' : 'var(--text-tertiary)';
+  const deltaBg = deltaTone === 'success' ? 'var(--success-100)' : deltaTone === 'error' ? 'var(--error-100)' : 'var(--neutral-100)';
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:6, padding:'16px 18px', borderRadius:'var(--radius-lg)', background:'var(--surface-card)', border:'1px solid var(--border-default)', boxShadow:'var(--shadow-sm)', fontFamily:'var(--font-body)', minWidth:160 }}>
+      <span style={{ fontSize:12.5, fontWeight:600, color:'var(--text-secondary)', textTransform:'uppercase', letterSpacing:'0.03em' }}>{label}</span>
+      <div style={{ display:'flex', alignItems:'baseline', gap:8 }}>
+        <span style={{ fontFamily:'var(--font-display)', fontSize:30, fontWeight:800, color:'var(--text-primary)', fontFeatureSettings:"'tnum' 1" }}>{value}</span>
+        {delta && <span style={{ fontSize:12, fontWeight:700, color:deltaColor, background:deltaBg, borderRadius:999, padding:'2px 8px' }}>{delta}</span>}
+      </div>
+    </div>
+  );
+}
+
+function BarMeter({ name, hours, target }) {
+  const pct = Math.min(100, (hours/target)*100);
+  const over = hours > target;
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:4, fontFamily:'var(--font-body)', minWidth:220 }}>
+      <div style={{ display:'flex', justifyContent:'space-between', fontSize:13 }}>
+        <span style={{ fontWeight:600, color:'var(--text-primary)' }}>{name}</span>
+        <span style={{ fontWeight:600, color: over ? 'var(--warning-700)' : 'var(--text-secondary)', fontFeatureSettings:"'tnum' 1" }}>{hours} / {target} hrs</span>
+      </div>
+      <div style={{ position:'relative', height:8, borderRadius:999, background:'var(--neutral-200)', overflow:'hidden' }}>
+        <div style={{ position:'absolute', inset:0, width:`${pct}%`, background: over ? 'var(--warning-500)' : 'var(--brand-500)', borderRadius:999 }} />
+      </div>
+    </div>
+  );
+}
+
+function Demo() {
+
+  return (
+    <div style={{display:'flex', flexDirection:'column', gap:12}}>
+      <div style={{display:'flex', gap:8, flexWrap:'wrap'}}>
+        <Badge kind="status" tone="success">Published</Badge>
+        <Badge kind="status" tone="warning">Near overtime</Badge>
+        <Badge kind="status" tone="error">Double-booked</Badge>
+        <Badge kind="status" tone="draft">Draft</Badge>
+        <Badge kind="status" tone="brand">New</Badge>
+      </div>
+      <div style={{display:'flex', gap:8, flexWrap:'wrap'}}>
+        <Badge kind="role" role="bartender">Bartender</Badge>
+        <Badge kind="role" role="server">Server</Badge>
+        <Badge kind="role" role="kitchen">Kitchen</Badge>
+        <Badge kind="role" role="host">Host</Badge>
+        <Badge kind="role" role="barback">Barback</Badge>
+        <Badge kind="role" role="manager">Manager</Badge>
+        <Badge kind="role" role="driver">Driver</Badge>
+        <Badge kind="role" role="cleaner">Cleaner</Badge>
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo />);
+</script>
+<script>
+  var __src = document.getElementById('app-source').textContent;
+  var __out = Babel.transform(__src, { presets: [['react', { runtime: 'classic' }]] }).code;
+  (0, eval)(__out);
+</script>

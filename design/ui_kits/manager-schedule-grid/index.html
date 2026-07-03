@@ -1,0 +1,420 @@
+<!-- @dsCard group="Manager Web App" viewport="1400x900" subtitle="Weekly schedule grid — one-tap generate, 30+ shift blocks, conflicts flagged" -->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  html,body{margin:0;background:var(--surface-page);}
+  * { box-sizing: border-box; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/plain" id="app-source">
+const { useState, useEffect, useRef } = React;
+
+/* ---- Inlined copies of the design-system primitives (see /components) ---- */
+
+function Icon({ name, size = 18, color = 'currentColor' }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (window.lucide && ref.current) {
+      ref.current.innerHTML = '';
+      const el = document.createElement('i');
+      el.setAttribute('data-lucide', name);
+      ref.current.appendChild(el);
+      window.lucide.createIcons({ attrs: { width: size, height: size, 'stroke-width': 2, color }, root: ref.current });
+    }
+  }, [name, size, color]);
+  return <span ref={ref} style={{ display:'inline-flex', width:size, height:size, color }} />;
+}
+
+function Button({ variant = 'primary', size = 'md', icon, children, onClick }) {
+  const dims = size === 'sm' ? { height:32, padding:'0 12px', fontSize:13 } : { height:38, padding:'0 16px', fontSize:14 };
+  const variants = {
+    primary: { background:'var(--brand-primary)', color:'#fff', boxShadow:'var(--shadow-sm)' },
+    secondary: { background:'var(--surface-card)', color:'var(--text-primary)', border:'1px solid var(--border-strong)' },
+    ghost: { background:'transparent', color:'var(--text-primary)' },
+    danger: { background:'var(--error-500)', color:'#fff' },
+  };
+  return (
+    <button onClick={onClick} style={{ display:'inline-flex', alignItems:'center', gap:8, borderRadius:'var(--radius-md)', border:'1px solid transparent', fontFamily:'var(--font-body)', fontWeight:600, cursor:'pointer', whiteSpace:'nowrap', ...dims, ...variants[variant] }}>
+      {icon}{children}
+    </button>
+  );
+}
+
+const ROLE_VARS = {
+  bartender: ['--role-bartender','--role-bartender-tint'], server: ['--role-server','--role-server-tint'],
+  kitchen: ['--role-kitchen','--role-kitchen-tint'], host: ['--role-host','--role-host-tint'],
+  barback: ['--role-barback','--role-barback-tint'], manager: ['--role-manager','--role-manager-tint'],
+  driver: ['--role-driver','--role-driver-tint'], cleaner: ['--role-cleaner','--role-cleaner-tint'],
+};
+
+// Literal (non-var) values for the Solid block style. Using var(--role-*) directly in a
+// `background` shorthand on these blocks was found to mis-resolve to the tint lightness
+// in this renderer, so Solid mode bakes the literal color instead of the CSS variable.
+const ROLE_SOLID = {
+  bartender: 'oklch(60% 0.140 223)', server: 'oklch(60% 0.130 283)', kitchen: 'oklch(56% 0.110 163)',
+  host: 'oklch(62% 0.150 343)', barback: 'oklch(56% 0.120 193)', manager: 'oklch(58% 0.110 253)',
+  driver: 'oklch(64% 0.140 313)', cleaner: 'oklch(62% 0.090 110)',
+};
+const ERROR_SOLID = 'oklch(56% 0.190 25)';
+const WARNING_SOLID = 'oklch(68% 0.160 78)';
+
+function Badge({ kind = 'status', tone = 'draft', role, dot = true, children }) {
+  const STATUS = {
+    success: { bg:'var(--success-100)', fg:'var(--success-700)', dot:'var(--success-500)' },
+    warning: { bg:'var(--warning-100)', fg:'var(--warning-700)', dot:'var(--warning-500)' },
+    error: { bg:'var(--error-100)', fg:'var(--error-700)', dot:'var(--error-500)' },
+    draft: { bg:'var(--draft-100)', fg:'var(--draft-700)', dot:'var(--draft-500)' },
+  };
+  let bg, fg, dotColor;
+  if (kind === 'role' && ROLE_VARS[role]) {
+    const [c,t] = ROLE_VARS[role]; bg = `var(${t})`; fg = 'var(--text-primary)'; dotColor = `var(${c})`;
+  } else {
+    const t = STATUS[tone] || STATUS.draft; bg = t.bg; fg = t.fg; dotColor = t.dot;
+  }
+  return (
+    <span style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'3px 10px', borderRadius:999, background:bg, color:fg, fontFamily:'var(--font-body)', fontSize:12, fontWeight:600, whiteSpace:'nowrap' }}>
+      {dot && <span style={{ width:6, height:6, borderRadius:'50%', background:dotColor }} />}
+      {children}
+    </span>
+  );
+}
+
+function ShiftBlock({ name, role = 'server', time, status = 'default', onClick, blockStyle = 'tinted', density = 'comfortable' }) {
+  const [roleColor, roleTint] = ROLE_VARS[role] || ROLE_VARS.server;
+  const compact = density === 'compact';
+  let border, background, dashed = false, badge = null, leftColor = `var(${roleColor})`, textColor = 'var(--text-primary)', nameColor = 'var(--text-primary)';
+
+  if (status === 'conflict') {
+    background = blockStyle === 'solid' ? ERROR_SOLID : 'var(--error-100)';
+    border = blockStyle === 'outline' ? '1.5px solid var(--error-500)' : (blockStyle === 'solid' ? '1.5px solid transparent' : '1.5px solid var(--error-500)');
+    badge = { label:'Fix ready', bg:'var(--brand-600)', icon:'wand-sparkles' }; leftColor = 'var(--error-500)';
+    if (blockStyle === 'solid') { textColor = '#fff'; nameColor = '#fff'; }
+  } else if (status === 'open') {
+    border = '1.5px dashed var(--neutral-300)'; background = 'var(--surface-sunken)'; dashed = true;
+  } else if (status === 'pending-swap') {
+    background = blockStyle === 'solid' ? WARNING_SOLID : 'var(--warning-100)';
+    border = blockStyle === 'outline' ? '1.5px solid var(--warning-500)' : (blockStyle === 'solid' ? '1.5px solid transparent' : '1.5px solid var(--warning-500)');
+    badge = { label:'Swap pending', bg:'var(--warning-700)' }; leftColor = 'var(--warning-500)';
+    if (blockStyle === 'solid') { textColor = '#3a2600'; nameColor = '#3a2600'; }
+  } else {
+    if (blockStyle === 'solid') {
+      background = ROLE_SOLID[role] || ROLE_SOLID.server; border = '1px solid transparent'; textColor = 'rgba(255,255,255,0.85)'; nameColor = '#fff';
+    } else if (blockStyle === 'outline') {
+      background = 'var(--surface-card)'; border = `1.5px solid var(${roleColor})`; nameColor = `var(${roleColor})`;
+    } else {
+      background = `var(${roleTint})`; border = '1px solid var(--border-default)';
+    }
+  }
+
+  const showLeftBar = blockStyle === 'tinted' && !dashed;
+
+  return (
+    <div onClick={onClick} style={{ position:'relative', display:'flex', flexDirection:'column', gap:2, padding: compact ? '5px 8px' : '8px 10px', borderRadius:'var(--radius-sm)', border, background, borderLeft: dashed ? border : (showLeftBar ? `4px solid ${leftColor}` : border), fontFamily:'var(--font-body)', cursor:'pointer', minWidth: compact ? 108 : 132, color: dashed ? 'var(--text-tertiary)' : textColor }}>
+      {dashed ? <div style={{ fontSize: compact ? 12 : 13, fontWeight:600 }}>Open shift</div> : <div style={{ fontSize: compact ? 12 : 13, fontWeight:700, lineHeight:1.2, color:nameColor }}>{name}</div>}
+      {!dashed && <div style={{ fontSize: compact ? 10 : 11, fontWeight:500, color: blockStyle === 'solid' ? textColor : 'var(--text-secondary)', textTransform:'capitalize' }}>{role}</div>}
+      <div style={{ fontSize: compact ? 10.5 : 11.5, fontWeight:600, color: dashed ? 'var(--text-tertiary)' : (blockStyle === 'solid' ? textColor : 'var(--text-secondary)'), fontFeatureSettings:"'tnum' 1" }}>{time}</div>
+      {badge && <span style={{ position:'absolute', top:-7, right:8, display:'inline-flex', alignItems:'center', gap:3, fontSize:10, fontWeight:700, padding:'2px 6px 2px 5px', borderRadius:999, background:badge.bg, color:'#fff' }}>{badge.icon && <Icon name={badge.icon} size={9} color="#fff" />}{badge.label}</span>}
+    </div>
+  );
+}
+
+function StatTile({ label, value, delta, deltaTone = 'success' }) {
+  const deltaColor = deltaTone === 'success' ? 'var(--success-700)' : deltaTone === 'error' ? 'var(--error-700)' : 'var(--text-tertiary)';
+  const deltaBg = deltaTone === 'success' ? 'var(--success-100)' : deltaTone === 'error' ? 'var(--error-100)' : 'var(--neutral-100)';
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:6, padding:'16px 18px', borderRadius:'var(--radius-lg)', background:'var(--surface-card)', border:'1px solid var(--border-default)', boxShadow:'var(--shadow-sm)', fontFamily:'var(--font-body)', minWidth:160 }}>
+      <span style={{ fontSize:12.5, fontWeight:600, color:'var(--text-secondary)', textTransform:'uppercase', letterSpacing:'0.03em' }}>{label}</span>
+      <div style={{ display:'flex', alignItems:'baseline', gap:8 }}>
+        <span style={{ fontFamily:'var(--font-display)', fontSize:30, fontWeight:800, color:'var(--text-primary)', fontFeatureSettings:"'tnum' 1" }}>{value}</span>
+        {delta && <span style={{ fontSize:12, fontWeight:700, color:deltaColor, background:deltaBg, borderRadius:999, padding:'2px 8px' }}>{delta}</span>}
+      </div>
+    </div>
+  );
+}
+
+function BarMeter({ name, hours, target }) {
+  const pct = Math.min(100, (hours/target)*100);
+  const over = hours > target;
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:4, fontFamily:'var(--font-body)', minWidth:220 }}>
+      <div style={{ display:'flex', justifyContent:'space-between', fontSize:13 }}>
+        <span style={{ fontWeight:600, color:'var(--text-primary)' }}>{name}</span>
+        <span style={{ fontWeight:600, color: over ? 'var(--warning-700)' : 'var(--text-secondary)', fontFeatureSettings:"'tnum' 1" }}>{hours} / {target} hrs</span>
+      </div>
+      <div style={{ position:'relative', height:8, borderRadius:999, background:'var(--neutral-200)', overflow:'hidden' }}>
+        <div style={{ position:'absolute', inset:0, width:`${pct}%`, background: over ? 'var(--warning-500)' : 'var(--brand-500)', borderRadius:999 }} />
+      </div>
+    </div>
+  );
+}
+
+function Select({ label, options = [] }) {
+  return (
+    <label style={{ display:'flex', flexDirection:'column', gap:6, fontFamily:'var(--font-body)' }}>
+      {label && <span style={{ fontSize:12.5, fontWeight:600, color:'var(--text-secondary)' }}>{label}</span>}
+      <select style={{ fontFamily:'var(--font-body)', fontSize:14, color:'var(--text-primary)', background:'var(--surface-card)', border:'1px solid var(--border-strong)', borderRadius:'var(--radius-md)', padding:'0 12px', height:40, width:'100%' }}>
+        {options.map(o => <option key={o}>{o}</option>)}
+      </select>
+    </label>
+  );
+}
+
+function Modal({ title, children, onClose, footer }) {
+  return (
+    <div style={{ position:'fixed', inset:0, background:'var(--surface-overlay)', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'var(--font-body)', zIndex:100, overflowY:'auto', padding:'40px 20px' }}>
+      <div style={{ width:420, maxWidth:'90%', background:'var(--surface-card)', borderRadius:'var(--radius-xl)', boxShadow:'var(--shadow-lg)', display:'flex', flexDirection:'column', overflow:'hidden', flexShrink:0 }}>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'18px 20px', borderBottom:'1px solid var(--border-default)' }}>
+          <span style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:18, color:'var(--text-primary)' }}>{title}</span>
+          <button onClick={onClose} style={{ border:'none', background:'transparent', color:'var(--text-tertiary)', cursor:'pointer', display:'flex' }}><Icon name="x" size={18} /></button>
+        </div>
+        <div style={{ padding:20, color:'var(--text-primary)', fontSize:14, lineHeight:1.5 }}>{children}</div>
+        {footer && <div style={{ display:'flex', justifyContent:'flex-end', gap:10, padding:'14px 20px', borderTop:'1px solid var(--border-default)', background:'var(--surface-sunken)' }}>{footer}</div>}
+      </div>
+    </div>
+  );
+}
+
+function Toast({ tone = 'success', message, onDismiss }) {
+  const TONES = { success:{bg:'var(--success-500)',fg:'#fff'}, warning:{bg:'var(--warning-500)',fg:'#1a1200'}, error:{bg:'var(--error-500)',fg:'#fff'} };
+  const t = TONES[tone] || TONES.success;
+  return (
+    <div style={{ display:'inline-flex', alignItems:'center', gap:12, padding:'12px 16px', borderRadius:'var(--radius-md)', background:t.bg, color:t.fg, fontFamily:'var(--font-body)', fontSize:13.5, fontWeight:600, boxShadow:'var(--shadow-lg)', minWidth:260 }}>
+      <span style={{ flex:1 }}>{message}</span>
+      {onDismiss && <button onClick={onDismiss} style={{ border:'none', background:'transparent', color:t.fg, opacity:0.75, cursor:'pointer', display:'flex' }}><Icon name="x" size={15} /></button>}
+    </div>
+  );
+}
+
+function Segmented({ label, options, value, onChange }) {
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+      <span style={{ fontSize:11.5, fontWeight:700, color:'var(--text-tertiary)', textTransform:'uppercase', letterSpacing:'0.04em' }}>{label}</span>
+      <div style={{ display:'flex', background:'var(--surface-sunken)', borderRadius:'var(--radius-md)', padding:3, gap:2 }}>
+        {options.map(o => (
+          <button key={o.value} onClick={() => onChange(o.value)} style={{
+            flex:1, border:'none', cursor:'pointer', padding:'7px 10px', borderRadius:'var(--radius-sm)',
+            fontFamily:'var(--font-body)', fontSize:12.5, fontWeight:700, whiteSpace:'nowrap',
+            background: value === o.value ? 'var(--surface-card)' : 'transparent',
+            color: value === o.value ? 'var(--text-primary)' : 'var(--text-tertiary)',
+            boxShadow: value === o.value ? 'var(--shadow-sm)' : 'none',
+            transition:'background var(--duration-fast) var(--ease-standard)',
+          }}>{o.label}</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SettingsModal({ density, setDensity, mood, setMood, onClose }) {
+  return (
+    <Modal title="Settings" onClose={onClose} footer={<Button variant="primary" onClick={onClose}>Done</Button>}>
+      <div style={{ display:'flex', flexDirection:'column', gap:18 }}>
+        <Segmented label="Grid density" value={density} onChange={setDensity} options={[
+          { value:'comfortable', label:'Comfortable' }, { value:'compact', label:'Compact' },
+        ]} />
+        <span style={{ fontSize:12, color:'var(--text-tertiary)', marginTop:-10 }}>Compact fits more of the week on screen — handy for larger teams.</span>
+        <Segmented label="Appearance" value={mood} onChange={setMood} options={[
+          { value:'light', label:'Light' }, { value:'dark', label:'Dark' },
+        ]} />
+        <span style={{ fontSize:12, color:'var(--text-tertiary)', marginTop:-10 }}>Dark keeps the grid easy on the eyes for late closeouts.</span>
+      </div>
+    </Modal>
+  );
+}
+
+/* ---------------------------------------------------------------- */
+
+const DAYS = ['MON 6','TUE 7','WED 8','THU 9','FRI 10','SAT 11','SUN 12'];
+const STAFF = [
+  { name:'Maya R.', role:'bartender', avail:'Wed–Sun, evenings' }, { name:'Theo K.', role:'kitchen', avail:'Mon–Fri, all day' }, { name:'Ava P.', role:'host', avail:'Thu–Mon, evenings' },
+  { name:'Sam D.', role:'barback', avail:'Tue–Sat, evenings' }, { name:'Jules F.', role:'server', avail:'Mon–Fri, days' }, { name:'Nora T.', role:'server', avail:'Wed–Sun, all day' },
+  { name:'Deja W.', role:'kitchen', avail:'Fri–Tue, evenings' }, { name:'Owen L.', role:'driver', avail:'Weekends only' },
+];
+const GRID = [
+  [ {s:0,t:'11a–5p',st:'default'}, {s:2,t:'11a–3p',st:'default'}, {s:4,t:'4p–10p',st:'default'}, {s:6,t:'9a–2p',st:'default'} ],
+  [ {s:0,t:'5p–11p',st:'default'}, {s:1,t:'4p–10p',st:'default'}, {s:3,t:'5p–11p',st:'default'}, {s:5,t:'11a–4p',st:'default'}, {s:7,t:'6p–9p',st:'default'} ],
+  [ {s:1,t:'4p–10p',st:'conflict'}, {s:2,t:'11a–4p',st:'default'}, {s:4,t:'11a–5p',st:'default'}, {s:6,t:'4p–10p',st:'conflict'} ],
+  [ {s:0,t:'11a–5p',st:'default'}, {s:3,t:'5p–11p',st:'default'}, {s:5,t:'5p–11p',st:'pending-swap'}, {s:1,t:'11a–4p',st:'default'} ],
+  [ {s:0,t:'5p–12a',st:'default'}, {s:2,t:'5p–12a',st:'default'}, {s:4,t:'5p–12a',st:'default'}, {s:6,t:'5p–11p',st:'default'}, {s:7,t:'8p–1a',st:'default'}, {s:3,t2:'5p–11p',st:'open'} ],
+  [ {s:0,t:'12p–6p',st:'default'}, {s:1,t:'12p–8p',st:'default'}, {s:2,t:'12p–6p',st:'default'}, {s:5,t:'6p–1a',st:'default'}, {s:6,t:'6p–1a',st:'default'}, {s:7,t:'6p–1a',st:'default'} ],
+  [ {s:0,t:'11a–4p',st:'default'}, {s:1,t2:'11a–4p',st:'open'}, {s:4,t:'11a–4p',st:'default'}, {s:6,t:'11a–4p',st:'default'} ],
+];
+
+const REQUESTS = [
+  { icon:'repeat-2', title:'Sam D. → cover Jules F.\u2019s Fri 5\u201311pm', detail:'Shift swap · both confirmed availability' },
+  { icon:'calendar-off', title:'Jules F. requests Jul 14\u201316 off', detail:'Time off · 3 days · no shifts currently scheduled' },
+  { icon:'trending-down', title:'Theo K. requests fewer hours next week', detail:'Target 30 hrs \u2192 22 hrs · reason: school schedule' },
+];
+
+function App() {
+  const [modal, setModal] = useState(null);
+  const [toast, setToast] = useState(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const blockStyle = 'tinted'; // locked design decision — not a user-facing setting
+  const [density, setDensity] = useState('comfortable');
+  const [mood, setMood] = useState('light');
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', mood === 'dark' ? 'dark' : 'light');
+  }, [mood]);
+  function publish() { setToast('Schedule published to 8 staff'); setTimeout(() => setToast(null), 3500); }
+  const compact = density === 'compact';
+
+  return (
+    <div style={{ position:'relative', minHeight:'100vh', fontFamily:'var(--font-body)' }}>
+      <div style={{ position:'fixed', inset:0, zIndex:-1, background: mood === 'dark' ? 'oklch(13% 0.008 55)' : 'oklch(97% 0.006 70)', transition:'background var(--duration-normal) var(--ease-standard)' }} />
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 28px', borderBottom:'1px solid var(--border-default)', background:'var(--surface-card)' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:28 }}>
+          <span style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:20, color:'var(--brand-700)' }}>Free &amp; Fast</span>
+          <div style={{ display:'flex', gap:20, fontSize:14, fontWeight:600 }}>
+            <span style={{ color:'var(--text-primary)', borderBottom:'2px solid var(--brand-500)', paddingBottom:16 }}>Schedule</span>
+            <span style={{ color:'var(--text-tertiary)' }}>Staff</span>
+            <span style={{ color:'var(--text-tertiary)' }}>Reports</span>
+          </div>
+        </div>
+        <div style={{ display:'flex', alignItems:'center', gap:14 }}>
+          <a href="../staff-mobile/index.html" style={{ display:'flex', alignItems:'center', gap:6, fontSize:13, fontWeight:700, color:'var(--brand-700)', background:'var(--brand-primary-tint)', border:'1px solid var(--brand-200)', borderRadius:'var(--radius-md)', padding:'7px 12px', textDecoration:'none' }}>
+            <Icon name="smartphone" size={14} color="var(--brand-700)" /> View staff app
+          </a>
+          <button onClick={() => setSettingsOpen(true)} style={{ display:'flex', alignItems:'center', justifyContent:'center', width:36, height:36, borderRadius:'50%', border:'1px solid var(--border-default)', background:'var(--surface-card)', cursor:'pointer' }}>
+            <Icon name="settings" size={16} color="var(--text-secondary)" />
+          </button>
+          <div style={{ width:32, height:32, borderRadius:'50%', background:'var(--brand-100)', color:'var(--brand-700)', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, fontSize:13 }}>DK</div>
+        </div>
+      </div>
+
+      <div style={{ padding:'22px 28px', display:'flex', flexDirection:'column', gap:20 }}>
+        <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', flexWrap:'wrap', gap:16 }}>
+          <div style={{ flexShrink:0 }}>
+            <div style={{ fontFamily:'var(--font-display)', fontSize:26, fontWeight:800, color:'var(--text-primary)', whiteSpace:'nowrap' }}>Week of Jul 6–12</div>
+            <div style={{ fontSize:13, color:'var(--text-secondary)', marginTop:2, whiteSpace:'nowrap' }}>The Amber Room · Downtown</div>
+          </div>
+          <div style={{ display:'flex', gap:10, alignItems:'center' }}>
+            <Button variant="secondary" size="sm">Copy last week</Button>
+            <Button variant="primary" icon={<Icon name="zap" size={16} color="#fff" />} onClick={() => setToast('Draft generated — 27 shifts filled, 2 need review')}>Generate schedule</Button>
+            <Button variant="primary" size="sm" onClick={publish}>Publish</Button>
+          </div>
+        </div>
+
+        <div style={{ display:'flex', gap:14, flexWrap:'wrap' }}>
+          <StatTile label="Total hours" value="312" delta="+6% vs last wk" />
+          <StatTile label="Labor cost" value="$4,820" delta="-2%" />
+          <StatTile label="Open shifts" value="2" delta="needs coverage" deltaTone="error" />
+          <StatTile label="Conflicts" value="2" delta="review now" deltaTone="error" />
+        </div>
+
+        <div style={{ display:'flex', gap:12, alignItems:'flex-end', background:'var(--surface-card)', border:'1px solid var(--border-default)', borderRadius:'var(--radius-lg)', padding:'12px 16px' }}>
+          <div style={{ width:180 }}><Select label="Role" options={['All roles','Bartender','Server','Kitchen','Host','Barback','Driver']} /></div>
+          <div style={{ width:160 }}><Select label="View" options={['Week','Day','Staff']} /></div>
+          <div style={{ marginLeft:'auto', display:'flex', gap:10 }}>
+            <Badge kind="status" tone="draft">Draft</Badge>
+            <Badge kind="status" tone="error">2 conflicts</Badge>
+          </div>
+        </div>
+
+        <div style={{ background:'var(--surface-card)', border:'1px solid var(--border-default)', borderRadius:'var(--radius-lg)', overflow:'hidden', boxShadow:'var(--shadow-sm)' }}>
+          <div style={{ display:'grid', gridTemplateColumns:'150px repeat(7, 1fr)', borderBottom:'1px solid var(--border-default)', background:'var(--surface-sunken)' }}>
+            <div style={{ padding: compact ? '7px 14px' : '10px 14px', fontSize:12, fontWeight:700, color:'var(--text-tertiary)' }}>STAFF</div>
+            {DAYS.map(d => <div key={d} style={{ padding: compact ? '7px 8px' : '10px 8px', fontSize:12, fontWeight:700, color:'var(--text-secondary)', textAlign:'center' }}>{d}</div>)}
+          </div>
+          {STAFF.map((person, si) => (
+            <div key={person.name} style={{ display:'grid', gridTemplateColumns:'150px repeat(7, 1fr)', borderBottom: si === STAFF.length-1 ? 'none' : '1px solid var(--border-default)' }}>
+              <div style={{ padding: compact ? '6px 14px' : '10px 14px', display:'flex', flexDirection:'column', gap:2, justifyContent:'center' }}>
+                <span style={{ fontSize:13, fontWeight:700, color:'var(--text-primary)' }}>{person.name}</span>
+                <Badge kind="role" role={person.role} dot={false}>{person.role}</Badge>
+                {!compact && <span style={{ display:'flex', alignItems:'center', gap:4, fontSize:11, color:'var(--text-tertiary)' }}><Icon name="calendar-clock" size={11} color="var(--text-tertiary)" />{person.avail}</span>}
+              </div>
+              {DAYS.map((d, di) => {
+                const cellShifts = GRID[di].filter(g => g.s === si);
+                return (
+                  <div key={di} style={{ padding: compact ? 4 : 6, display:'flex', flexDirection:'column', gap: compact ? 4 : 6, borderLeft:'1px solid var(--border-default)', minHeight: compact ? 52 : 64 }}>
+                    {cellShifts.map((g, gi) => (
+                      <ShiftBlock key={gi} name={g.st === 'open' ? undefined : person.name} role={person.role} time={g.st === 'open' ? g.t2 : g.t} status={g.st} blockStyle={blockStyle} density={density} onClick={() => setModal({ person, day: DAYS[di], g })} />
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+
+        <div style={{ background:'var(--surface-card)', border:'1px solid var(--border-default)', borderRadius:'var(--radius-lg)', padding:'18px 20px', display:'flex', flexDirection:'column', gap:14 }}>
+          <span style={{ fontSize:13, fontWeight:700, color:'var(--text-secondary)', textTransform:'uppercase', letterSpacing:'0.03em' }}>Hours vs. target</span>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
+            <BarMeter name="Maya R." hours={38} target={35} />
+            <BarMeter name="Theo K." hours={30} target={30} />
+            <BarMeter name="Ava P." hours={18} target={25} />
+            <BarMeter name="Jules F." hours={40} target={32} />
+          </div>
+        </div>
+
+        <div style={{ background:'var(--surface-card)', border:'1px solid var(--border-default)', borderRadius:'var(--radius-lg)', overflow:'hidden' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:8, padding:'14px 20px', borderBottom:'1px solid var(--border-default)' }}>
+            <Icon name="inbox" size={16} color="var(--brand-600)" />
+            <span style={{ fontSize:13, fontWeight:700, color:'var(--text-secondary)', textTransform:'uppercase', letterSpacing:'0.03em' }}>Requests</span>
+            <Badge kind="status" tone="warning">3 pending</Badge>
+          </div>
+          <div style={{ display:'flex', flexDirection:'column' }}>
+            {REQUESTS.map((r, i) => (
+              <div key={i} style={{ display:'flex', alignItems:'center', gap:14, padding:'14px 20px', borderBottom: i === REQUESTS.length-1 ? 'none' : '1px solid var(--border-default)' }}>
+                <Icon name={r.icon} size={18} color="var(--text-tertiary)" />
+                <div style={{ flex:1, display:'flex', flexDirection:'column', gap:2 }}>
+                  <span style={{ fontSize:13.5, fontWeight:700, color:'var(--text-primary)' }}>{r.title}</span>
+                  <span style={{ fontSize:12.5, color:'var(--text-secondary)' }}>{r.detail}</span>
+                </div>
+                <Button variant="ghost" size="sm" onClick={() => setToast(r.title + ' declined')}>Decline</Button>
+                <Button variant="primary" size="sm" onClick={() => setToast(r.title + ' approved')}>Approve</Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {modal && (
+        <Modal title={modal.g.st === 'conflict' ? 'Approve suggested fix' : modal.g.st === 'pending-swap' ? 'Approve shift swap?' : modal.g.st === 'open' ? 'Assign open shift' : 'Edit shift'} onClose={() => setModal(null)}
+          footer={<>
+            <Button variant="ghost" onClick={() => setModal(null)}>{modal.g.st === 'conflict' ? 'Fix manually' : 'Cancel'}</Button>
+            <Button variant="primary" onClick={() => { setModal(null); if (modal.g.st === 'conflict') setToast('Fix applied \u2014 shift reassigned to Nora T.'); }}>{modal.g.st === 'conflict' ? 'Approve fix' : modal.g.st === 'pending-swap' ? 'Approve' : modal.g.st === 'open' ? 'Assign' : 'Save'}</Button>
+          </>}>
+          {modal.g.st === 'conflict' && (
+            <>
+              <div>{modal.person.name} is double-booked with another shift on {modal.day}. Free &amp; Fast found a fix — approve it below, or adjust manually.</div>
+              <div style={{ marginTop:14, padding:'12px 14px', background:'var(--brand-primary-tint)', border:'1px solid var(--brand-200)', borderRadius:'var(--radius-md)', display:'flex', gap:10 }}>
+                <Icon name="wand-sparkles" size={16} color="var(--brand-600)" />
+                <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
+                  <span style={{ fontSize:12.5, fontWeight:700, color:'var(--brand-700)' }}>Suggested fix</span>
+                  <span style={{ fontSize:13, color:'var(--text-primary)', lineHeight:1.4 }}>Move this shift to Nora T. — she's available and under her target hours this week.</span>
+                </div>
+              </div>
+            </>
+          )}
+          {modal.g.st === 'pending-swap' && <>{modal.person.name} wants to swap their {modal.day} shift. Waiting on your approval.</>}
+          {modal.g.st === 'open' && <>This {modal.day} shift needs a {modal.person.role}. Pick someone available.</>}
+          {modal.g.st === 'default' && <>{modal.person.name} · {modal.day} · {modal.g.t}</>}
+        </Modal>
+      )}
+
+      {toast && <div style={{ position:'fixed', bottom:24, left:24, zIndex:20 }}><Toast tone="success" message={toast} onDismiss={() => setToast(null)} /></div>}
+
+      {settingsOpen && <SettingsModal density={density} setDensity={setDensity} mood={mood} setMood={setMood} onClose={() => setSettingsOpen(false)} />}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+<script>
+  var __src = document.getElementById('app-source').textContent;
+  var __out = Babel.transform(__src, { presets: [['react', { runtime: 'classic' }]] }).code;
+  (0, eval)(__out);
+</script>
+</body>
+</html>

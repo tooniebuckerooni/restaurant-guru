@@ -53,7 +53,7 @@ Ordered roughly by how much they compound the flagship's value:
 - **Scheduling engine:** isolated service/module with a clean API (`inputs → schedule + score + violations`). Start with a greedy assigner + local-search improvement in TypeScript (fast enough for small teams, easy to debug); keep the interface solver-agnostic so we can swap in a real CP-SAT solver (e.g. OR-Tools via a small Python service) when team sizes and rule complexity grow.
 - **Auth & access:** one app, role-based access (see FLOWS.md). Managers: email/Google sign-in. Staff: invite-only with one-time codes — no passwords. Staff experience ships as an installable PWA; native apps deferred.
 - **Notifications:** email first (Resend/Postmark), then push + SMS (Twilio).
-- **Design system:** visual reference lives in the Claude Design project (`41fcef3a…`, "manager-schedule-grid" kit). Its HTML/CSS gets imported under `design/` and distilled into the Tailwind theme during Phase 0.
+- **Design system:** imported under `design/` (from the Claude Design "Free & Fast Schedule Maker" handoff): tokens (colors/type/spacing/effects, incl. dark mode), 9 components, guideline specimens, and two full screens (`design/ui_kits/`). These are HTML/JSX prototypes — Phase 0 distills the tokens into the Tailwind theme and rebuilds components as production React; match the visuals, not the prototype internals.
 - **Hosting:** Vercel + managed Postgres (Neon/Supabase) to start. Boring and cheap.
 
 ### Phases
