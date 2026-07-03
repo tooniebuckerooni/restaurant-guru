@@ -73,30 +73,28 @@ function absoluteRange(dates: string[], slot: Slot): TimeRange {
   return { start: base + slot.range.start, end: base + slot.range.end };
 }
 
-function violatesHardRules(
+/** Returns a human-readable reason the assignment is illegal, or null if OK. */
+function hardRuleViolation(
   input: GenerationInput,
   ctx: Ctx,
   staff: StaffMember,
   slot: Slot,
-): boolean {
-  // Role qualification.
-  if (!staff.roleIds.includes(slot.roleId)) return true;
-  // Time off.
-  if (staff.timeOff.includes(slot.date)) return true;
-  // Availability windows must fully cover the shift (incl. past-midnight overflow).
-  if (!availabilityCovers(staff, slot.date, slot.range)) return true;
+): string | null {
+  if (!staff.roleIds.includes(slot.roleId)) return "not qualified for this role";
+  if (staff.timeOff.includes(slot.date)) return "approved time off";
+  if (!availabilityCovers(staff, slot.date, slot.range)) return "outside availability";
   // Weekly max hours (period may exceed a week; cap scales with period length).
-  const capHours =
-    (staff.maxHoursPerWeek * input.dates.length) / 7;
+  const capHours = (staff.maxHoursPerWeek * input.dates.length) / 7;
   const already = ctx.hoursByStaff.get(staff.id) ?? 0;
-  if (already + rangeHours(slot.range) > capHours + 1e-9) return true;
+  if (already + rangeHours(slot.range) > capHours + 1e-9) {
+    return `over max hours (${staff.maxHoursPerWeek}h/wk)`;
+  }
 
   const mine = ctx.slotsByStaff.get(staff.id) ?? [];
   const abs = absoluteRange(input.dates, slot);
   for (const other of mine) {
     const otherAbs = absoluteRange(input.dates, other);
-    // No double-booking.
-    if (overlaps(abs, otherAbs)) return true;
+    if (overlaps(abs, otherAbs)) return "double-booked";
     // Rest gap between shifts (the no-clopen rule).
     if (!input.rules.allowClopens) {
       const gap =
@@ -104,11 +102,77 @@ function violatesHardRules(
           ? abs.start - otherAbs.end
           : otherAbs.start - abs.end;
       if (gap >= 0 && gap < input.rules.minRestHours * MINUTES_PER_HOUR) {
-        return true;
+        return `under ${input.rules.minRestHours}h rest between shifts`;
       }
     }
   }
-  return false;
+  return null;
+}
+
+function violatesHardRules(
+  input: GenerationInput,
+  ctx: Ctx,
+  staff: StaffMember,
+  slot: Slot,
+): boolean {
+  return hardRuleViolation(input, ctx, staff, slot) !== null;
+}
+
+/** Rebuild assignment context from an existing set of slots. */
+function ctxFromSlots(input: GenerationInput, slots: Slot[]): Ctx {
+  const ctx: Ctx = {
+    hoursByStaff: new Map(),
+    slotsByStaff: new Map(),
+    weekendShiftsByStaff: new Map(),
+  };
+  for (const slot of slots) {
+    if (slot.staffId === null) continue;
+    const staff = input.staff.find((s) => s.id === slot.staffId);
+    if (staff) assign(ctx, slot, staff);
+  }
+  return ctx;
+}
+
+export interface EligibilityEntry {
+  staffId: string;
+  /** null = assignable; otherwise why not. */
+  blockedReason: string | null;
+  currentHours: number;
+}
+
+/**
+ * For a manual edit: can `staffId` take `slotId` given the schedule as it
+ * stands? Returns null when legal, else the reason. Pass every slot in the
+ * schedule; the target slot's current assignee is ignored.
+ */
+export function checkAssignment(
+  input: GenerationInput,
+  slots: Slot[],
+  slotId: string,
+  staffId: string,
+): string | null {
+  const target = slots.find((s) => s.id === slotId);
+  if (!target) return "unknown shift";
+  const staff = input.staff.find((s) => s.id === staffId);
+  if (!staff) return "unknown staff member";
+  const others = slots.filter((s) => s.id !== slotId);
+  const ctx = ctxFromSlots(input, others);
+  return hardRuleViolation(input, ctx, staff, { ...target, staffId: null });
+}
+
+/** Every staff member's eligibility for a slot, for reassignment pickers. */
+export function eligibilityFor(
+  input: GenerationInput,
+  slots: Slot[],
+  slotId: string,
+): EligibilityEntry[] {
+  const others = slots.filter((s) => s.id !== slotId);
+  const ctx = ctxFromSlots(input, others);
+  return input.staff.map((staff) => ({
+    staffId: staff.id,
+    blockedReason: checkAssignment(input, slots, slotId, staff.id),
+    currentHours: ctx.hoursByStaff.get(staff.id) ?? 0,
+  }));
 }
 
 /** Lower score = better candidate. Soft preferences only. */
@@ -228,11 +292,27 @@ export function generateSchedule(input: GenerationInput): GenerationResult {
     }
   }
 
-  // Totals and warnings.
+  return {
+    slots,
+    ...summarize(input.staff, input.dates, slots, input.rules.budgetCents),
+    elapsedMs: performance.now() - startedAt,
+  };
+}
+
+/**
+ * Totals and warnings from a set of slots. Pure and slot-derived so the UI
+ * can re-summarize after manual edits without regenerating.
+ */
+export function summarize(
+  staffList: StaffMember[],
+  dates: string[],
+  slots: Slot[],
+  budgetCents?: number,
+): Omit<GenerationResult, "slots" | "elapsedMs"> {
   const warnings: Warning[] = [];
-  const totalsByStaff: StaffTotals[] = input.staff.map((s) => {
-    const mine = ctx.slotsByStaff.get(s.id) ?? [];
-    const hours = ctx.hoursByStaff.get(s.id) ?? 0;
+  const totalsByStaff: StaffTotals[] = staffList.map((s) => {
+    const mine = slots.filter((slot) => slot.staffId === s.id);
+    const hours = mine.reduce((sum, slot) => sum + rangeHours(slot.range), 0);
     return {
       staffId: s.id,
       hours,
@@ -249,9 +329,8 @@ export function generateSchedule(input: GenerationInput): GenerationResult {
     });
   }
   for (const t of totalsByStaff) {
-    const staff = input.staff.find((s) => s.id === t.staffId)!;
-    const periodTarget =
-      (staff.targetHoursPerWeek * input.dates.length) / 7;
+    const staff = staffList.find((s) => s.id === t.staffId)!;
+    const periodTarget = (staff.targetHoursPerWeek * dates.length) / 7;
     if (t.hours > periodTarget + 4) {
       warnings.push({
         kind: "over-target-hours",
@@ -268,27 +347,19 @@ export function generateSchedule(input: GenerationInput): GenerationResult {
   }
 
   const totalHours = totalsByStaff.reduce((sum, t) => sum + t.hours, 0);
-  const totalCostCents = totalsByStaff.reduce(
-    (sum, t) => sum + t.costCents,
-    0,
-  );
-  if (
-    input.rules.budgetCents !== undefined &&
-    totalCostCents > input.rules.budgetCents
-  ) {
+  const totalCostCents = totalsByStaff.reduce((sum, t) => sum + t.costCents, 0);
+  if (budgetCents !== undefined && totalCostCents > budgetCents) {
     warnings.push({
       kind: "over-budget",
-      message: `Labor cost $${(totalCostCents / 100).toFixed(0)} exceeds budget $${(input.rules.budgetCents / 100).toFixed(0)}`,
+      message: `Labor cost $${(totalCostCents / 100).toFixed(0)} exceeds budget $${(budgetCents / 100).toFixed(0)}`,
     });
   }
 
   return {
-    slots,
     warnings,
     totalsByStaff,
     totalHours,
     totalCostCents,
     openSlotCount: slots.filter((s) => s.staffId === null).length,
-    elapsedMs: performance.now() - startedAt,
   };
 }

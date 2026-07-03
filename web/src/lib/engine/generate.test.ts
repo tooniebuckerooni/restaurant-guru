@@ -195,6 +195,34 @@ describe("generateSchedule", () => {
     expect(avaHours).toBeLessThanOrEqual(20);
   });
 
+  it("checkAssignment explains why a reassignment is illegal", async () => {
+    const { checkAssignment } = await import("./generate");
+    const input = baseInput({
+      staff: [staff({ id: "ava" }), staff({ id: "sam", roleIds: ["kitchen"] })],
+      requirements: [
+        { id: "r1", date: "2026-07-10", roleId: "bartender", range: { start: 16 * 60, end: 22 * 60 }, count: 1 },
+      ],
+    });
+    const result = generateSchedule(input);
+    const slotId = result.slots[0].id;
+    expect(checkAssignment(input, result.slots, slotId, "ava")).toBeNull();
+    expect(checkAssignment(input, result.slots, slotId, "sam")).toMatch(/not qualified/);
+  });
+
+  it("eligibilityFor lists blocked reasons per staff member", async () => {
+    const { eligibilityFor } = await import("./generate");
+    const input = baseInput({
+      staff: [staff({ id: "ava" }), staff({ id: "sam", timeOff: ["2026-07-10"] })],
+      requirements: [
+        { id: "r1", date: "2026-07-10", roleId: "bartender", range: { start: 16 * 60, end: 22 * 60 }, count: 1 },
+      ],
+    });
+    const result = generateSchedule(input);
+    const entries = eligibilityFor(input, result.slots, result.slots[0].id);
+    expect(entries.find((e) => e.staffId === "ava")!.blockedReason).toBeNull();
+    expect(entries.find((e) => e.staffId === "sam")!.blockedReason).toMatch(/time off/);
+  });
+
   it("reports elapsed time", () => {
     const result = generateSchedule(baseInput());
     expect(result.elapsedMs).toBeGreaterThanOrEqual(0);
