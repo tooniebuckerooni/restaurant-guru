@@ -1,0 +1,599 @@
+<title>Free & Fast — live demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+/* ============ Design tokens: "Free & Fast Schedule Maker" ============ */
+:root {
+  --brand-50: oklch(97% 0.020 55); --brand-400: oklch(71% 0.140 46);
+  --brand-500: oklch(64% 0.160 45); --brand-600: oklch(56% 0.155 43); --brand-700: oklch(47% 0.135 42);
+  --neutral-0: oklch(99% 0.004 70); --neutral-50: oklch(97% 0.006 70); --neutral-100: oklch(94% 0.008 68);
+  --neutral-200: oklch(89% 0.009 66); --neutral-300: oklch(82% 0.010 64); --neutral-400: oklch(70% 0.011 62);
+  --neutral-500: oklch(58% 0.012 60); --neutral-600: oklch(48% 0.012 58); --neutral-900: oklch(18% 0.007 52);
+  --success-100: oklch(93% 0.050 150); --success-500: oklch(60% 0.135 148); --success-700: oklch(40% 0.100 150);
+  --warning-100: oklch(93% 0.060 80); --warning-500: oklch(68% 0.160 78); --warning-700: oklch(46% 0.110 70);
+  --error-100: oklch(93% 0.045 20); --error-500: oklch(56% 0.190 25);
+  --role-bartender: oklch(60% 0.140 223); --role-bartender-tint: oklch(93% 0.030 223);
+  --role-server: oklch(60% 0.130 283); --role-server-tint: oklch(93% 0.030 283);
+  --role-kitchen: oklch(56% 0.110 163); --role-kitchen-tint: oklch(93% 0.030 163);
+  --role-host: oklch(62% 0.150 343); --role-host-tint: oklch(93% 0.032 343);
+  --role-barback: oklch(56% 0.120 193); --role-barback-tint: oklch(93% 0.028 193);
+  --surface-page: var(--neutral-50); --surface-card: var(--neutral-0); --surface-sunken: var(--neutral-100);
+  --surface-overlay: oklch(20% 0.02 55 / 0.45);
+  --border-default: var(--neutral-200); --border-strong: var(--neutral-300);
+  --text-primary: var(--neutral-900); --text-secondary: var(--neutral-600); --text-tertiary: var(--neutral-500);
+  --text-on-brand: #fff;
+  --brand-primary: var(--brand-500); --brand-primary-hover: var(--brand-600); --brand-primary-tint: var(--brand-50);
+  --draft-100: var(--neutral-100); --draft-700: oklch(38% 0.011 56);
+  --shadow-lg: 0 8px 24px oklch(20% 0.02 50 / 0.14), 0 2px 6px oklch(20% 0.02 50 / 0.08);
+  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px; --radius-xl: 20px;
+  --font-display: 'Bricolage Grotesque', ui-rounded, 'SF Pro Rounded', system-ui, sans-serif;
+  --font-body: 'Public Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --neutral-0: oklch(16% 0.010 55); --neutral-50: oklch(19% 0.010 55); --neutral-100: oklch(23% 0.010 55);
+    --neutral-200: oklch(28% 0.010 55); --neutral-300: oklch(35% 0.010 56); --neutral-400: oklch(46% 0.011 58);
+    --neutral-500: oklch(58% 0.011 60); --neutral-600: oklch(70% 0.010 62); --neutral-900: oklch(95% 0.005 70);
+    --surface-page: oklch(13% 0.008 55); --surface-overlay: oklch(8% 0.01 55 / 0.6);
+    --brand-500: oklch(70% 0.155 46); --brand-primary-hover: oklch(76% 0.145 47); --brand-primary-tint: oklch(24% 0.05 48);
+    --success-100: oklch(24% 0.06 150); --success-700: oklch(85% 0.09 150);
+    --warning-100: oklch(24% 0.07 80); --warning-700: oklch(85% 0.10 80);
+    --error-100: oklch(24% 0.06 22);
+    --role-bartender-tint: oklch(26% 0.05 223); --role-server-tint: oklch(26% 0.05 283);
+    --role-kitchen-tint: oklch(24% 0.045 163); --role-host-tint: oklch(26% 0.055 343);
+    --role-barback-tint: oklch(24% 0.045 193);
+    --draft-700: oklch(80% 0.009 64);
+    --shadow-lg: 0 10px 28px oklch(0% 0 0 / 0.55), 0 2px 6px oklch(0% 0 0 / 0.35);
+  }
+}
+:root[data-theme="dark"] {
+  --neutral-0: oklch(16% 0.010 55); --neutral-50: oklch(19% 0.010 55); --neutral-100: oklch(23% 0.010 55);
+  --neutral-200: oklch(28% 0.010 55); --neutral-300: oklch(35% 0.010 56); --neutral-400: oklch(46% 0.011 58);
+  --neutral-500: oklch(58% 0.011 60); --neutral-600: oklch(70% 0.010 62); --neutral-900: oklch(95% 0.005 70);
+  --surface-page: oklch(13% 0.008 55); --surface-overlay: oklch(8% 0.01 55 / 0.6);
+  --brand-500: oklch(70% 0.155 46); --brand-primary-hover: oklch(76% 0.145 47); --brand-primary-tint: oklch(24% 0.05 48);
+  --success-100: oklch(24% 0.06 150); --success-700: oklch(85% 0.09 150);
+  --warning-100: oklch(24% 0.07 80); --warning-700: oklch(85% 0.10 80);
+  --error-100: oklch(24% 0.06 22);
+  --role-bartender-tint: oklch(26% 0.05 223); --role-server-tint: oklch(26% 0.05 283);
+  --role-kitchen-tint: oklch(24% 0.045 163); --role-host-tint: oklch(26% 0.055 343);
+  --role-barback-tint: oklch(24% 0.045 193);
+  --draft-700: oklch(80% 0.009 64);
+  --shadow-lg: 0 10px 28px oklch(0% 0 0 / 0.55), 0 2px 6px oklch(0% 0 0 / 0.35);
+}
+:root[data-theme="light"] {
+  --neutral-0: oklch(99% 0.004 70); --neutral-50: oklch(97% 0.006 70); --neutral-100: oklch(94% 0.008 68);
+  --neutral-200: oklch(89% 0.009 66); --neutral-300: oklch(82% 0.010 64); --neutral-400: oklch(70% 0.011 62);
+  --neutral-500: oklch(58% 0.012 60); --neutral-600: oklch(48% 0.012 58); --neutral-900: oklch(18% 0.007 52);
+  --surface-page: var(--neutral-50); --surface-overlay: oklch(20% 0.02 55 / 0.45);
+  --brand-500: oklch(64% 0.160 45); --brand-primary-hover: oklch(56% 0.155 43); --brand-primary-tint: oklch(97% 0.020 55);
+  --success-100: oklch(93% 0.050 150); --success-700: oklch(40% 0.100 150);
+  --warning-100: oklch(93% 0.060 80); --warning-700: oklch(46% 0.110 70);
+  --error-100: oklch(93% 0.045 20);
+  --role-bartender-tint: oklch(93% 0.030 223); --role-server-tint: oklch(93% 0.030 283);
+  --role-kitchen-tint: oklch(93% 0.030 163); --role-host-tint: oklch(93% 0.032 343);
+  --role-barback-tint: oklch(93% 0.028 193);
+  --draft-700: oklch(38% 0.011 56);
+  --shadow-lg: 0 8px 24px oklch(20% 0.02 50 / 0.14), 0 2px 6px oklch(20% 0.02 50 / 0.08);
+}
+
+/* ============ Base ============ */
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--surface-page); color: var(--text-primary);
+  font-family: var(--font-body); font-size: 14px; line-height: 1.5;
+}
+button { font: inherit; }
+.tabular { font-variant-numeric: tabular-nums lining-nums; }
+.wrap { max-width: 1400px; margin: 0 auto; padding: 24px; }
+.narrow { max-width: 430px; }
+
+/* Header */
+.topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.wordmark { font-family: var(--font-display); font-weight: 800; font-size: 22px; letter-spacing: -0.02em; }
+.subtitle { color: var(--text-secondary); }
+.badge { display: inline-block; border-radius: 999px; padding: 1px 8px; font-size: 12px; font-weight: 600; vertical-align: 1px; }
+.badge.draft { background: var(--draft-100); color: var(--draft-700); }
+.badge.published { background: var(--success-100); color: var(--success-700); }
+
+/* Buttons */
+.btn { border-radius: var(--radius-sm); padding: 8px 16px; font-weight: 600; cursor: pointer;
+  border: 1px solid transparent; transition: background 120ms cubic-bezier(0.2,0,0,1), transform 120ms; }
+.btn:active { transform: scale(0.97); }
+.btn:focus-visible { outline: none; box-shadow: 0 0 0 3px oklch(71% 0.14 46 / 0.35); }
+.btn-primary { background: var(--brand-primary); color: var(--text-on-brand); }
+.btn-primary:hover { background: var(--brand-primary-hover); }
+.btn-secondary { background: var(--surface-card); border-color: var(--border-strong); color: var(--text-primary); }
+.btn-secondary:hover { background: var(--surface-sunken); }
+.btn-publish { background: var(--surface-card); border-color: var(--success-500); color: var(--success-700); }
+.btn-publish:hover { background: var(--success-100); }
+
+/* Hint strip */
+.hint { border: 1px solid var(--border-default); background: var(--surface-card); border-radius: var(--radius-md);
+  padding: 10px 16px; margin-bottom: 20px; color: var(--text-secondary); display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+.hint b { color: var(--text-primary); }
+.hint button { background: none; border: none; color: var(--text-tertiary); cursor: pointer; font-size: 18px; line-height: 1; padding: 2px 6px; }
+
+/* Stat tiles */
+.stats { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+.tile { background: var(--surface-card); border: 1px solid var(--border-default); border-radius: var(--radius-md);
+  padding: 12px 16px; min-width: 128px; }
+.tile .label { font-size: 12px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: var(--text-tertiary); }
+.tile .value { font-size: 22px; font-weight: 700; }
+.tile .sub { font-size: 12px; color: var(--text-secondary); }
+
+/* Warnings */
+.warnings { background: var(--warning-100); border: 1px solid var(--warning-500); color: var(--warning-700);
+  border-radius: var(--radius-md); padding: 8px 16px; margin-bottom: 20px; font-size: 13px; }
+
+/* Grid */
+.gridwrap { overflow-x: auto; }
+.grid { display: grid; gap: 1px; background: var(--border-default); border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg); overflow: hidden; min-width: 900px; }
+.dayhead { background: var(--surface-sunken); text-align: center; padding: 8px; }
+.dayhead .dow { font-weight: 700; }
+.dayhead .date { font-size: 12px; color: var(--text-secondary); }
+.daycol { background: var(--surface-card); padding: 6px; display: flex; flex-direction: column; gap: 6px; min-height: 224px; }
+.shift { display: block; width: 100%; text-align: left; border: none; border-left: 4px solid; border-radius: var(--radius-sm);
+  padding: 4px 8px; font-size: 13px; line-height: 1.3; cursor: pointer; font-family: inherit; }
+.shift .who { font-weight: 600; color: var(--text-primary); }
+.shift .what { color: var(--text-secondary); }
+.shift.open { background: var(--error-100); border-left-color: var(--error-500); }
+.empty { border: 1px dashed var(--border-strong); border-radius: var(--radius-lg); padding: 64px 24px; text-align: center; color: var(--text-secondary); }
+.empty .big { font-size: 18px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+
+/* Meters */
+.meters h2 { font-size: 16px; margin: 24px 0 8px; font-family: var(--font-display); letter-spacing: -0.01em; }
+.meterrow { display: flex; align-items: center; gap: 12px; font-size: 13px; max-width: 620px; margin-bottom: 4px; }
+.meterrow .name { width: 80px; flex-shrink: 0; }
+.meterrow .bar { flex: 1; height: 8px; border-radius: 999px; background: var(--surface-sunken); overflow: hidden; }
+.meterrow .fill { height: 100%; border-radius: 999px; background: var(--brand-primary); }
+.meterrow .fill.over { background: var(--warning-500); }
+.meterrow .nums { width: 96px; text-align: right; color: var(--text-secondary); }
+
+/* Modal picker */
+.overlay { position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center; }
+.overlay .scrim { position: absolute; inset: 0; background: var(--surface-overlay); }
+.modal { position: relative; z-index: 50; width: 320px; max-width: calc(100vw - 32px); background: var(--surface-card);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); padding: 16px; }
+.modal h3 { margin: 0 0 4px; font-size: 15px; font-family: var(--font-display); }
+.modal .shiftinfo { font-size: 13px; color: var(--text-secondary); margin-bottom: 10px; }
+.modal .list { display: flex; flex-direction: column; gap: 4px; max-height: 320px; overflow-y: auto; }
+.cand { text-align: left; border: none; border-radius: var(--radius-sm); padding: 8px 12px; font-size: 13px;
+  background: var(--surface-sunken); cursor: pointer; color: var(--text-primary); font-family: inherit; }
+.cand:hover:not(:disabled) { background: var(--brand-primary-tint); }
+.cand:disabled { opacity: 0.55; cursor: not-allowed; }
+.cand.current { background: var(--brand-primary-tint); }
+.cand .why { color: var(--error-500); }
+.cand .hrs { color: var(--text-secondary); }
+.unassign { margin-top: 8px; width: 100%; border-radius: var(--radius-sm); padding: 8px 12px; font-size: 13px; font-weight: 600;
+  background: transparent; border: 1px solid var(--error-500); color: var(--error-500); cursor: pointer; }
+
+/* Staff view */
+.nextcard { background: var(--brand-primary); color: var(--text-on-brand); border-radius: var(--radius-xl); padding: 20px; margin-bottom: 24px; }
+.nextcard .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; opacity: 0.9; }
+.nextcard .day { font-family: var(--font-display); font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
+.upcoming { display: flex; flex-direction: column; gap: 8px; }
+.upcard { display: flex; justify-content: space-between; align-items: center; gap: 12px; background: var(--surface-card);
+  border: 1px solid var(--border-default); border-radius: var(--radius-md); padding: 12px 16px; }
+.upcard .d { font-weight: 600; }
+.upcard .r { font-size: 13px; color: var(--text-secondary); }
+.upcard .t { font-size: 13px; color: var(--text-secondary); }
+
+/* Toast, footer */
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 60;
+  background: var(--neutral-900); color: var(--neutral-0); font-weight: 600;
+  border-radius: var(--radius-md); padding: 8px 16px; box-shadow: var(--shadow-lg); }
+footer { margin-top: 32px; font-size: 12px; color: var(--text-tertiary); }
+footer a { color: inherit; }
+@media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
+
+/* Print: the kitchen-wall copy */
+@media print {
+  body { background: #fff; }
+  .no-print { display: none !important; }
+  .grid { min-width: 0; box-shadow: none; }
+  @page { size: landscape; margin: 10mm; }
+}
+</style>
+
+<div id="app" class="wrap"></div>
+
+<script>
+"use strict";
+/* ================= Engine (port of web/src/lib/engine/generate.ts) ================= */
+const MIN_H = 60, DAY_MIN = 1440;
+const weekdayOf = iso => (new Date(iso + "T00:00:00Z").getUTCDay() + 6) % 7;
+const overlaps = (a, b) => a.start < b.end && b.start < a.end;
+const rangeHours = r => (r.end - r.start) / MIN_H;
+const coveredBy = (shift, ws) => ws.some(w => w.start <= shift.start && shift.end <= w.end);
+const isWeekend = date => { const wd = weekdayOf(date); return wd === 4 || wd === 5 || wd === 6; };
+
+function availabilityCovers(staff, date, shift) {
+  const ws = staff.availability[weekdayOf(date)];
+  if (!ws) return false;
+  if (coveredBy(shift, ws)) return true;
+  if (shift.end <= DAY_MIN) return false;
+  if (!coveredBy({ start: shift.start, end: DAY_MIN }, ws)) return false;
+  const nws = staff.availability[(weekdayOf(date) + 1) % 7];
+  return !!nws && coveredBy({ start: 0, end: shift.end - DAY_MIN }, nws);
+}
+function absRange(dates, slot) {
+  const base = dates.indexOf(slot.date) * DAY_MIN;
+  return { start: base + slot.range.start, end: base + slot.range.end };
+}
+function newCtx() { return { hours: new Map(), slots: new Map(), weekend: new Map() }; }
+function assignSlot(ctx, slot, staff) {
+  slot.staffId = staff.id;
+  ctx.hours.set(staff.id, (ctx.hours.get(staff.id) || 0) + rangeHours(slot.range));
+  (ctx.slots.get(staff.id) || ctx.slots.set(staff.id, []).get(staff.id)).push(slot);
+  if (isWeekend(slot.date)) ctx.weekend.set(staff.id, (ctx.weekend.get(staff.id) || 0) + 1);
+}
+function unassignSlot(ctx, slot, staff) {
+  slot.staffId = null;
+  ctx.hours.set(staff.id, (ctx.hours.get(staff.id) || 0) - rangeHours(slot.range));
+  ctx.slots.set(staff.id, (ctx.slots.get(staff.id) || []).filter(s => s.id !== slot.id));
+  if (isWeekend(slot.date)) ctx.weekend.set(staff.id, (ctx.weekend.get(staff.id) || 0) - 1);
+}
+function hardRuleViolation(input, ctx, staff, slot) {
+  if (!staff.roleIds.includes(slot.roleId)) return "not qualified for this role";
+  if (staff.timeOff.includes(slot.date)) return "approved time off";
+  if (!availabilityCovers(staff, slot.date, slot.range)) return "outside availability";
+  const cap = staff.maxHoursPerWeek * input.dates.length / 7;
+  if ((ctx.hours.get(staff.id) || 0) + rangeHours(slot.range) > cap + 1e-9)
+    return "over max hours (" + staff.maxHoursPerWeek + "h/wk)";
+  const abs = absRange(input.dates, slot);
+  for (const other of ctx.slots.get(staff.id) || []) {
+    const oabs = absRange(input.dates, other);
+    if (overlaps(abs, oabs)) return "double-booked";
+    if (!input.rules.allowClopens) {
+      const gap = abs.start >= oabs.end ? abs.start - oabs.end : oabs.start - abs.end;
+      if (gap >= 0 && gap < input.rules.minRestHours * MIN_H)
+        return "under " + input.rules.minRestHours + "h rest between shifts";
+    }
+  }
+  return null;
+}
+const eligible = (input, ctx, slot) => input.staff.filter(s => !hardRuleViolation(input, ctx, s, slot));
+function score(ctx, staff, slot) {
+  const gap = (ctx.hours.get(staff.id) || 0) + rangeHours(slot.range) - staff.targetHoursPerWeek;
+  return (gap > 0 ? gap * 3 : gap) + (isWeekend(slot.date) ? (ctx.weekend.get(staff.id) || 0) * 2 : 0);
+}
+function generateSchedule(input) {
+  const t0 = performance.now();
+  const slots = input.requirements.flatMap(req =>
+    Array.from({ length: req.count }, (_, i) => ({
+      id: req.id + "#" + i, date: req.date, roleId: req.roleId,
+      range: req.range, staffId: null,
+    })));
+  const ctx = newCtx();
+  const ordered = [...slots].sort((a, b) => eligible(input, ctx, a).length - eligible(input, ctx, b).length);
+  for (const slot of ordered) {
+    const cands = eligible(input, ctx, slot);
+    if (!cands.length) continue;
+    cands.sort((a, b) => score(ctx, a, slot) - score(ctx, b, slot));
+    assignSlot(ctx, slot, cands[0]);
+  }
+  for (const open of slots.filter(s => s.staffId === null)) {
+    for (const donorSlot of slots.filter(s => s.staffId !== null)) {
+      const donor = input.staff.find(st => st.id === donorSlot.staffId);
+      unassignSlot(ctx, donorSlot, donor);
+      const canCover = !hardRuleViolation(input, ctx, donor, open);
+      const repl = eligible(input, ctx, donorSlot).filter(s => s.id !== donor.id);
+      if (canCover && repl.length) {
+        assignSlot(ctx, open, donor);
+        repl.sort((a, b) => score(ctx, a, donorSlot) - score(ctx, b, donorSlot));
+        assignSlot(ctx, donorSlot, repl[0]);
+        break;
+      }
+      assignSlot(ctx, donorSlot, donor);
+    }
+  }
+  return { slots, elapsedMs: performance.now() - t0 };
+}
+function ctxFromSlots(input, slots) {
+  const ctx = newCtx();
+  for (const slot of slots) {
+    if (slot.staffId === null) continue;
+    const staff = input.staff.find(s => s.id === slot.staffId);
+    if (staff) assignSlot(ctx, { ...slot }, staff);
+  }
+  return ctx;
+}
+function checkAssignment(input, slots, slotId, staffId) {
+  const target = slots.find(s => s.id === slotId);
+  const staff = input.staff.find(s => s.id === staffId);
+  if (!target || !staff) return "unknown";
+  const ctx = ctxFromSlots(input, slots.filter(s => s.id !== slotId));
+  return hardRuleViolation(input, ctx, staff, { ...target, staffId: null });
+}
+function eligibilityFor(input, slots, slotId) {
+  const ctx = ctxFromSlots(input, slots.filter(s => s.id !== slotId));
+  return input.staff.map(staff => ({
+    staffId: staff.id, name: staff.name,
+    blockedReason: checkAssignment(input, slots, slotId, staff.id),
+    currentHours: ctx.hours.get(staff.id) || 0,
+  })).sort((a, b) => (a.blockedReason !== null) - (b.blockedReason !== null) || a.currentHours - b.currentHours);
+}
+function summarize(staffList, dates, slots, budgetCents) {
+  const warnings = [];
+  const totals = staffList.map(s => {
+    const mine = slots.filter(sl => sl.staffId === s.id);
+    const hours = mine.reduce((sum, sl) => sum + rangeHours(sl.range), 0);
+    return { staffId: s.id, hours, costCents: Math.round(hours * s.wageCents), shiftCount: mine.length };
+  });
+  for (const sl of slots.filter(s => s.staffId === null))
+    warnings.push("Open shift: " + sl.roleId + " on " + sl.date);
+  for (const t of totals) {
+    const s = staffList.find(x => x.id === t.staffId);
+    const target = s.targetHoursPerWeek * dates.length / 7;
+    if (t.hours > target + 4) warnings.push(s.name + " is " + (t.hours - target).toFixed(1) + "h over target");
+    else if (t.shiftCount > 0 && t.hours < target - 8) warnings.push(s.name + " is " + (target - t.hours).toFixed(1) + "h under target");
+  }
+  const totalHours = totals.reduce((a, t) => a + t.hours, 0);
+  const totalCost = totals.reduce((a, t) => a + t.costCents, 0);
+  if (budgetCents && totalCost > budgetCents)
+    warnings.push("Labor cost $" + Math.round(totalCost / 100) + " exceeds budget $" + Math.round(budgetCents / 100));
+  return { totals, warnings, totalHours, totalCost, openCount: slots.filter(s => s.staffId === null).length };
+}
+
+/* ================= Demo org: The Amber Room ================= */
+const h = x => x * 60;
+const EVE = [{ start: h(15), end: h(26) }], DAYS = [{ start: h(8), end: h(17) }], ALL = [{ start: h(8), end: h(26) }];
+const wk = o => o;
+const every = r => ({ 0: r, 1: r, 2: r, 3: r, 4: r, 5: r, 6: r });
+const ROLES = [
+  { id: "bartender", name: "Bartender" }, { id: "server", name: "Server" },
+  { id: "kitchen", name: "Kitchen" }, { id: "host", name: "Host" }, { id: "barback", name: "Barback" },
+];
+const STAFF = [
+  { id: "ava", name: "Ava P.", roleIds: ["bartender"], wageCents: 2200, maxHoursPerWeek: 40, targetHoursPerWeek: 35, availability: wk({ 2: EVE, 3: EVE, 4: EVE, 5: EVE, 6: EVE }), timeOff: [] },
+  { id: "sam", name: "Sam D.", roleIds: ["bartender", "barback"], wageCents: 2000, maxHoursPerWeek: 40, targetHoursPerWeek: 32, availability: wk({ 0: EVE, 1: EVE, 3: EVE, 4: EVE, 5: EVE }), timeOff: [] },
+  { id: "nora", name: "Nora T.", roleIds: ["bartender", "server"], wageCents: 2100, maxHoursPerWeek: 30, targetHoursPerWeek: 24, availability: wk({ 4: ALL, 5: ALL, 6: ALL }), timeOff: [] },
+  { id: "maya", name: "Maya R.", roleIds: ["server"], wageCents: 1700, maxHoursPerWeek: 40, targetHoursPerWeek: 30, availability: every(EVE), timeOff: [] },
+  { id: "jules", name: "Jules F.", roleIds: ["server", "host"], wageCents: 1700, maxHoursPerWeek: 35, targetHoursPerWeek: 28, availability: wk({ 0: ALL, 1: ALL, 2: ALL, 5: EVE, 6: EVE }), timeOff: [] },
+  { id: "deja", name: "Deja W.", roleIds: ["host", "server"], wageCents: 1600, maxHoursPerWeek: 25, targetHoursPerWeek: 20, availability: wk({ 3: EVE, 4: EVE, 5: EVE, 6: EVE }), timeOff: [] },
+  { id: "theo", name: "Theo K.", roleIds: ["kitchen"], wageCents: 1900, maxHoursPerWeek: 45, targetHoursPerWeek: 40, availability: every(ALL), timeOff: [] },
+  { id: "owen", name: "Owen L.", roleIds: ["kitchen", "barback"], wageCents: 1800, maxHoursPerWeek: 40, targetHoursPerWeek: 32, availability: wk({ 0: DAYS, 1: DAYS, 2: ALL, 3: ALL, 4: ALL, 6: ALL }), timeOff: [] },
+];
+function needsFor(wd) {
+  const busy = wd === 4 || wd === 5, weekend = busy || wd === 6;
+  const out = [
+    { roleId: "kitchen", range: { start: h(10), end: h(16) }, count: 1 },
+    { roleId: "kitchen", range: { start: h(16), end: h(22) }, count: 1 },
+    { roleId: "bartender", range: { start: h(16), end: busy ? h(26) : h(24) }, count: busy ? 2 : 1 },
+    { roleId: "server", range: { start: h(17), end: h(23) }, count: busy ? 3 : 2 },
+  ];
+  if (weekend) out.push({ roleId: "host", range: { start: h(17), end: h(22) }, count: 1 });
+  if (busy) out.push({ roleId: "barback", range: { start: h(18), end: h(24) }, count: 1 });
+  return out;
+}
+function nextPeriodDates(days = 7) {
+  const start = new Date();
+  start.setDate(start.getDate() + (7 - (start.getDay() + 6) % 7) % 7);
+  return Array.from({ length: days }, (_, i) => {
+    const d = new Date(start); d.setDate(d.getDate() + i);
+    return d.toISOString().slice(0, 10);
+  });
+}
+function buildInput(dates) {
+  return {
+    dates, staff: STAFF,
+    requirements: dates.flatMap((date, di) =>
+      needsFor(weekdayOf(date)).map((n, i) => ({ id: "d" + di + "-" + n.roleId + "-" + i, date, ...n }))),
+    rules: { minRestHours: 10, allowClopens: false, budgetCents: 500000 },
+  };
+}
+
+/* ================= State ================= */
+const KEY = "freefast-demo-v1";
+let state = load() || { dates: nextPeriodDates(), slots: null, status: "draft", generatedMs: null, view: "manager", staffId: null, hintDismissed: false };
+function load() { try { return JSON.parse(localStorage.getItem(KEY)); } catch { return null; } }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} }
+let picker = null, toastMsg = null, toastTimer = null;
+
+/* ================= Formatting ================= */
+const fmtTime = m => {
+  const mm = m % DAY_MIN, hr = Math.floor(mm / 60), min = mm % 60;
+  const h12 = hr % 12 === 0 ? 12 : hr % 12, ap = hr < 12 ? "AM" : "PM";
+  return min ? h12 + ":" + String(min).padStart(2, "0") + " " + ap : h12 + " " + ap;
+};
+const fmtDay = iso => {
+  const d = new Date(iso + "T00:00:00");
+  return { dow: d.toLocaleDateString("en-US", { weekday: "short" }), date: d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) };
+};
+const fmtDayLong = iso => new Date(iso + "T00:00:00").toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+const dollars = c => "$" + Math.round(c / 100).toLocaleString("en-US");
+const fmtMs = ms => ms < 1000 ? Math.max(1, Math.round(ms)) + " ms" : (ms / 1000).toFixed(1) + "s";
+const roleName = id => ROLES.find(r => r.id === id).name;
+
+/* ================= Actions ================= */
+function doGenerate() {
+  const r = generateSchedule(buildInput(state.dates));
+  state.slots = r.slots; state.status = "draft"; state.generatedMs = r.elapsedMs;
+  save(); toast("Schedule generated in " + fmtMs(r.elapsedMs)); render();
+}
+function doPublish() {
+  state.status = "published"; save();
+  toast("Published — " + STAFF.length + " staff notified"); render();
+}
+function openPicker(slotId) {
+  const input = buildInput(state.dates);
+  picker = { slotId, options: eligibilityFor(input, state.slots, slotId) };
+  render();
+}
+function doAssign(slotId, staffId) {
+  if (staffId !== null) {
+    const reason = checkAssignment(buildInput(state.dates), state.slots, slotId, staffId);
+    if (reason) { toast("Can't assign: " + reason); picker = null; render(); return; }
+  }
+  state.slots.find(s => s.id === slotId).staffId = staffId;
+  state.status = "draft"; picker = null; save(); render();
+}
+function toast(msg) {
+  toastMsg = msg;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toastMsg = null; render(); }, 4000);
+}
+function resetDemo() { localStorage.removeItem(KEY); location.reload(); }
+
+/* ================= Render ================= */
+const app = document.getElementById("app");
+const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function render() {
+  app.className = state.view === "staff" ? "wrap narrow" : "wrap";
+  app.innerHTML = state.view === "staff" ? renderStaff() : renderManager();
+  bind();
+}
+
+function renderManager() {
+  const s = state.slots ? summarize(STAFF, state.dates, state.slots, 500000) : null;
+  const pl = fmtDay(state.dates[0]).date + " – " + fmtDay(state.dates[6]).date;
+  const pub = state.status === "published";
+  let out = `
+  <div class="topbar">
+    <div>
+      <div class="wordmark">Free &amp; Fast</div>
+      <div class="subtitle">The Amber Room · Week of ${pl}
+        ${state.slots ? `<span class="badge ${pub ? "published" : "draft"}">${pub ? "Published" : "Draft"}</span>` : ""}
+      </div>
+    </div>
+    <div style="display:flex;gap:8px" class="no-print">
+      <button class="btn btn-secondary" data-action="print">Print / PDF</button>
+      ${state.slots && !pub ? `<button class="btn btn-publish" data-action="publish">Publish</button>` : ""}
+      <button class="btn btn-primary" data-action="generate">${state.slots ? "Regenerate" : "Generate schedule"}</button>
+    </div>
+  </div>`;
+  if (!state.hintDismissed) out += `
+  <div class="hint no-print">
+    <div><b>Try it:</b> Generate, then click any shift to reassign it — the picker explains who can't take it and why. Publish, then view as staff below.</div>
+    <button data-action="dismiss-hint" aria-label="Dismiss">×</button>
+  </div>`;
+  if (s) {
+    out += `<div class="stats">
+      <div class="tile"><div class="label">Total hours</div><div class="value tabular">${s.totalHours} hrs</div></div>
+      <div class="tile"><div class="label">Labor cost</div><div class="value tabular">${dollars(s.totalCost)}</div><div class="sub">budget $5,000</div></div>
+      <div class="tile"><div class="label">Open shifts</div><div class="value tabular">${s.openCount}</div></div>
+      <div class="tile"><div class="label">Warnings</div><div class="value tabular">${s.warnings.length}</div></div>
+    </div>`;
+    if (s.warnings.length) out += `<div class="warnings no-print">
+      ${s.warnings.slice(0, 4).map(esc).map(w => `<div>${w}</div>`).join("")}
+      ${s.warnings.length > 4 ? `<div>…and ${s.warnings.length - 4} more</div>` : ""}
+    </div>`;
+  }
+  if (state.slots) {
+    out += `<div class="gridwrap print-clean"><div class="grid" style="grid-template-columns:repeat(7,minmax(0,1fr))">`;
+    for (const d of state.dates) {
+      const f = fmtDay(d);
+      out += `<div class="dayhead"><div class="dow">${f.dow}</div><div class="date">${f.date}</div></div>`;
+    }
+    for (const d of state.dates) {
+      out += `<div class="daycol">`;
+      const day = state.slots.filter(x => x.date === d).sort((a, b) => a.range.start - b.range.start || a.roleId.localeCompare(b.roleId));
+      for (const sl of day) {
+        const open = sl.staffId === null;
+        const who = open ? "Open shift" : esc(STAFF.find(x => x.id === sl.staffId).name);
+        const style = open ? "" : `style="background:var(--role-${sl.roleId}-tint);border-left-color:var(--role-${sl.roleId})"`;
+        out += `<button class="shift${open ? " open" : ""}" ${style} data-action="pick" data-slot="${sl.id}" title="Click to reassign">
+          <span class="who">${who}</span><br><span class="what tabular">${roleName(sl.roleId)} · ${fmtTime(sl.range.start)}–${fmtTime(sl.range.end)}</span>
+        </button>`;
+      }
+      out += `</div>`;
+    }
+    out += `</div></div>`;
+  } else {
+    out += `<div class="empty"><div class="big">Next week is ready to build</div><div>8 staff · standard week template · one click</div></div>`;
+  }
+  if (s) {
+    out += `<section class="meters"><h2>Hours this week</h2>`;
+    for (const t of s.totals.filter(t => t.shiftCount).sort((a, b) => b.hours - a.hours)) {
+      const st = STAFF.find(x => x.id === t.staffId);
+      const pct = Math.min(100, t.hours / st.targetHoursPerWeek * 100);
+      out += `<div class="meterrow"><div class="name">${esc(st.name)}</div>
+        <div class="bar"><div class="fill${t.hours > st.targetHoursPerWeek ? " over" : ""}" style="width:${pct}%"></div></div>
+        <div class="nums tabular">${t.hours}h / ${st.targetHoursPerWeek}h</div></div>`;
+    }
+    out += `</section>`;
+  }
+  out += `<footer class="no-print">Demo: view as staff —
+    ${STAFF.slice(0, 4).map(st => `<a href="#" data-action="view-staff" data-staff="${st.id}">${esc(st.name)}</a>`).join(" · ")}
+    &nbsp;·&nbsp; <a href="#" data-action="reset">Reset demo</a></footer>`;
+  if (picker) out += renderPicker();
+  if (toastMsg) out += `<div class="toast no-print">${esc(toastMsg)}</div>`;
+  return out;
+}
+
+function renderPicker() {
+  const slot = state.slots.find(s => s.id === picker.slotId);
+  return `<div class="overlay no-print" data-action="close-overlay">
+    <div class="scrim"></div>
+    <div class="modal" role="dialog" aria-label="Assign shift">
+      <h3>Assign shift</h3>
+      <div class="shiftinfo tabular">${roleName(slot.roleId)} · ${fmtDayLong(slot.date)} · ${fmtTime(slot.range.start)}–${fmtTime(slot.range.end)}</div>
+      <div class="list">
+        ${picker.options.map(o => {
+          const blocked = o.blockedReason !== null, cur = o.staffId === slot.staffId;
+          return `<button class="cand${cur ? " current" : ""}" ${blocked || cur ? "disabled" : ""} data-action="assign" data-staff="${o.staffId}">
+            <b>${esc(o.name)}</b> <span class="hrs tabular">· ${o.currentHours}h</span>${cur ? ` <span class="hrs">· current</span>` : ""}
+            ${blocked ? `<div class="why">${esc(o.blockedReason)}</div>` : ""}
+          </button>`;
+        }).join("")}
+      </div>
+      ${slot.staffId !== null ? `<button class="unassign" data-action="assign" data-staff="">Unassign — leave shift open</button>` : ""}
+    </div>
+  </div>`;
+}
+
+function renderStaff() {
+  const me = STAFF.find(s => s.id === state.staffId);
+  const first = me.name.split(" ")[0];
+  const mine = (state.slots || []).filter(s => s.staffId === me.id).sort((a, b) => a.date.localeCompare(b.date) || a.range.start - b.range.start);
+  const draftTag = state.status === "draft" ? " · draft" : "";
+  let out = `<div class="topbar"><div>
+    <div class="wordmark">Hey ${esc(first)} 👋</div>
+    <div class="subtitle">The Amber Room</div>
+  </div></div>`;
+  if (mine.length) {
+    const n = mine[0];
+    out += `<div class="nextcard">
+      <div class="eyebrow">Next shift</div>
+      <div class="day">${fmtDayLong(n.date)}</div>
+      <div class="tabular">${roleName(n.roleId)} · ${fmtTime(n.range.start)}–${fmtTime(n.range.end)}${draftTag}</div>
+    </div>`;
+    if (mine.length > 1) {
+      out += `<h2 style="font-size:16px;font-family:var(--font-display)">Coming up</h2><div class="upcoming">`;
+      for (const s of mine.slice(1)) {
+        out += `<div class="upcard"><div><div class="d">${fmtDayLong(s.date)}</div><div class="r">${roleName(s.roleId)}${draftTag}</div></div>
+          <div class="t tabular">${fmtTime(s.range.start)}–${fmtTime(s.range.end)}</div></div>`;
+      }
+      out += `</div>`;
+    }
+  } else {
+    out += `<div class="empty">No upcoming shifts yet — the next schedule hasn't been ${state.slots ? "assigned to you" : "generated"}.</div>`;
+  }
+  out += `<footer><a href="#" data-action="view-manager">← Manager view</a></footer>`;
+  if (toastMsg) out += `<div class="toast">${esc(toastMsg)}</div>`;
+  return out;
+}
+
+function bind() {
+  app.querySelectorAll("[data-action]").forEach(el => {
+    el.addEventListener("click", e => {
+      const a = el.dataset.action;
+      if (a === "close-overlay" && e.target.closest(".modal")) return;
+      e.preventDefault();
+      if (a === "generate") doGenerate();
+      else if (a === "publish") doPublish();
+      else if (a === "print") window.print();
+      else if (a === "pick") openPicker(el.dataset.slot);
+      else if (a === "assign") doAssign(picker.slotId, el.dataset.staff || null);
+      else if (a === "close-overlay") { picker = null; render(); }
+      else if (a === "view-staff") { state.view = "staff"; state.staffId = el.dataset.staff; save(); render(); }
+      else if (a === "view-manager") { state.view = "manager"; save(); render(); }
+      else if (a === "dismiss-hint") { state.hintDismissed = true; save(); render(); }
+      else if (a === "reset") resetDemo();
+    });
+  });
+}
+render();
+</script>
