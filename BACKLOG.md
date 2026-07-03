@@ -3,8 +3,8 @@
 Candidate functions beyond PLAN.md's committed scope. Tiers reflect current judgment; pilot feedback reorders this list, not us.
 
 ## Tier 1 — obvious table stakes, fold into v1/v1.x
+(Print/PDF was promoted out of this list into PLAN.md core v1 scope.)
 - **Calendar sync** — per-user iCal feed (Google/Apple). Most-requested feature in every competitor's reviews. Cheap.
-- **Print / PDF week view** — clean print stylesheet; the kitchen-wall schedule is still real.
 - **Shift reminders** — auto push/SMS "you're on in 2 hours". Cuts no-shows.
 - **Shift notes** — freeform note per shift ("private party at 8, wear black").
 - **Blackout dates** — no time-off requests during defined ranges (holidays).

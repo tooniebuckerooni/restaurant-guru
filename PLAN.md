@@ -24,6 +24,10 @@ One tap turns your inputs into a complete, conflict-free weekly schedule.
 
 **Drafts, save & resume (v1):** every schedule is a saved draft until published. Managers can stop mid-edit and pick up later; nothing is lost on close. Published weeks are kept forever as history.
 
+**Setup once, then one click per period (core principle):** managers get rich options at setup — roles, rules, demand patterns, cadence — and staff get only the key features (shifts, requests, swaps); the option surface is asymmetric by design. Schedules run on a configurable **period cadence: weekly, biweekly, or monthly.** When the next period is due, producing it is one click plus a few adjustments: the draft pre-exists, changes since last period are surfaced, generate/repair does the rest. Every generation shows its elapsed time ("Generated in 0.9s") and the running "hours saved vs. manual scheduling" tally — speed *is* the brand, so the product keeps receipts.
+
+**Print / PDF (v1, prominent):** a first-class button on the grid, not a buried export — one click gives a clean printable week (print stylesheet + PDF). The schedule taped up by the kitchen pass is still how much of the industry works; meeting that habit builds trust while the app earns its place.
+
 **Copy last week (v1):** one tap duplicates the previous week's published schedule as a new draft. Crucially, the engine immediately *repairs* the copy against current reality — flagging or reassigning shifts broken by new time-off requests, availability changes, or departed staff — so "same as last week with small edits" takes a minute, not a rebuild. This matters because copy-last-week is how most managers actually schedule today; it's the generator's biggest competitor, so we make it a first-class flow that still runs through the rules engine. Recurring weekly patterns can also be saved as named templates ("Standard week", "Holiday week", "Patio season").
 
 ## Supporting features (recommended)
@@ -79,13 +83,13 @@ Principle: the free tier should match the product's natural weekly rhythm — a 
 
 **Free — "This Week"**
 - Teams up to 10 staff.
-- One active week at a time: the current week plus next week. This is the "once per week" habit loop — every Sunday they're back.
+- Weekly cadence only; one active week at a time: the current week plus next week. This is the "once per week" habit loop — every Sunday they're back. Biweekly/monthly cadences are Pro — they're inherently "plan further ahead."
 - Full generator, unlimited regenerations *within* that week, drafts/save-and-resume, copy last week.
 - Basic reporting on the grid (hours per person this week).
 - 4 weeks of schedule history.
 
 **Pro (per active staff member per month, monthly/annual)**
-- Unlimited staff, plan any number of weeks ahead — the full **month view** and beyond (holiday season planning is a killer upgrade moment in hospitality).
+- Unlimited staff, plan any number of periods ahead — the full **month view** and beyond (holiday season planning is a killer upgrade moment in hospitality), plus **biweekly and monthly cadences**.
 - Named week templates, unlimited history, week-over-week and monthly reports with CSV/PDF export.
 - Shift swaps/open-shift marketplace, labor cost meter vs. budget, SMS notifications.
 

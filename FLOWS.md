@@ -34,15 +34,16 @@ Staff land on **My Shifts**; they never see admin navigation. Managers land on t
 1. Sign up → name the business → pick an industry template (bar/restaurant pre-selected role packs; generic pack for everyone else).
 2. Add staff: paste a list / CSV import / add manually. Inviting staff is optional at this step — the manager can schedule first and invite later, so the first schedule doesn't wait on anyone else.
 3. Build the demand template with a visual week painter: tap a day, add shifts by role and headcount. Prefilled sensible defaults from the industry template so they edit rather than create from blank.
-4. Set the rules that matter (max hours, no-clopen toggle, budget) — everything else defaults on.
-5. **Generate.** The first "whoa" moment. Review on the grid, drag to adjust, publish.
+4. Set the rules that matter (max hours, no-clopen toggle, budget) and the **schedule cadence** — weekly, biweekly, or monthly. Everything else defaults on. Setup is where the option depth lives; it's done once and revisited rarely.
+5. **Generate.** The first "whoa" moment. Review on the grid, drag to adjust, publish. A **Print / PDF** button sits beside Publish — first-class, not buried in a menu.
 
-### The weekly loop (the habit)
-1. Open the app → next week's draft already exists (auto-created from the demand template, or one tap to copy last week).
+### The per-period loop (the habit)
+1. Open the app → the next period's draft already exists (auto-created from the demand template on the org's cadence — weekly, biweekly, or monthly — or one tap to copy last period). The target: by the time the next schedule is due, it's a quick click and a few adjustments, if any.
 2. A **"what changed" strip** sits above the grid: new time-off requests, availability changes, staff joined/left. Approve/acknowledge inline — these feed the generator before it runs, so the manager never publishes against stale reality.
 3. Generate (or repair the copied week). Conflicts and warnings appear as badges on the affected shifts, with one-tap fixes ("swap in someone eligible").
 4. Glance at the hours panel beside the grid: per-person totals vs. targets, overtime flags, total cost.
-5. Publish → everyone is notified automatically. No separate "send" step, no export, no group chat paste.
+5. Publish → everyone is notified automatically. No separate "send" step, no export, no group chat paste. **Print / PDF** is one click from the same toolbar for the kitchen-wall copy.
+6. The app shows its receipt: generation time in seconds and a running "hours saved vs. manual scheduling" tally. Speed is the pitch; the product proves it every period.
 
 ### Midweek interrupts
 - **Swap request:** notification → one tap opens the request with the engine's verdict already computed ("Maria is qualified, stays under 40h") → approve/deny from the notification without opening the grid.
